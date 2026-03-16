@@ -81,6 +81,30 @@
                         class="w-full rounded-2xl border-none bg-slate-50 px-4 py-3.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all cursor-pointer">
                 </div>
 
+                <!-- Exclusion Filter -->
+                <div class="flex flex-col gap-2 min-w-[200px] w-full lg:w-auto relative" id="exclude-filter-container">
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] ml-1">YASHIRISH</label>
+                    <div class="relative">
+                        <div id="exclude-select-trigger" class="w-full rounded-2xl bg-slate-50 border-none px-4 py-3.5 text-sm font-bold text-slate-700 cursor-pointer flex items-center justify-between hover:bg-slate-100 transition-all">
+                            <span id="exclude-selected-text" class="truncate">Metodlar</span>
+                            <svg class="h-4 w-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                        <div id="exclude-dropdown" class="absolute left-0 right-0 mt-3 bg-white rounded-[1.5rem] shadow-2xl border border-slate-100 p-3 z-[60] hidden overflow-hidden scale-95 opacity-0 transition-all duration-200 origin-top">
+                            <div class="space-y-1 max-h-60 overflow-y-auto custom-scrollbar p-1">
+                                @php
+                                    $commonEvents = ['viewed', 'LOGGED_IN', 'LOGGED_OUT', 'created', 'updated', 'deleted', 'attached', 'detached'];
+                                @endphp
+                                @foreach($commonEvents as $event)
+                                <label class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 cursor-pointer group transition-all">
+                                    <input type="checkbox" name="exclude_events[]" value="{{ $event }}" onchange="applyFilters()" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                    <span class="text-xs font-bold text-slate-600 group-hover:text-indigo-700 uppercase tracking-widest">{{ $event }}</span>
+                                </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Action Button -->
                 <div class="pb-0.5">
                     <button onclick="clearFilters()" class="h-[52px] w-[52px] flex items-center justify-center rounded-2xl bg-white text-slate-400 border border-slate-200 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100 transition-all active:scale-95 shadow-sm" title="{{ __('audits.filter_clear') }}">
@@ -290,6 +314,7 @@
                 date_from: document.getElementById('filter-date-from').value,
                 date_to: document.getElementById('filter-date-to').value,
                 search: document.getElementById('filter-search').value,
+                exclude_events: Array.from(document.querySelectorAll('input[name="exclude_events[]"]:checked')).map(cb => cb.value)
             };
         }
 
@@ -306,6 +331,7 @@
             document.getElementById('filter-date-to').value = '';
             document.getElementById('filter-date-to').min = ''; // Reset min constraint
             document.getElementById('filter-search').value = '';
+            document.querySelectorAll('input[name="exclude_events[]"]').forEach(cb => cb.checked = false);
             applyFilters();
         }
 
@@ -339,6 +365,9 @@
             if (filters.project) tags.push({ label: `Loyiha: ${filters.project}`, key: 'project' });
             if (filters.date_from) tags.push({ label: `Dan: ${filters.date_from}`, key: 'date_from' });
             if (filters.date_to) tags.push({ label: `Gacha: ${filters.date_to}`, key: 'date_to' });
+            if (filters.exclude_events && filters.exclude_events.length > 0) {
+                tags.push({ label: `Yashirilgan: ${filters.exclude_events.join(', ')}`, key: 'exclude_events' });
+            }
 
             if (tags.length === 0) {
                 container.classList.add('hidden');
@@ -371,7 +400,11 @@
                 document.getElementById('filter-date-to').min = '';
             }
 
-            document.getElementById(map[key]).value = '';
+            if (key === 'exclude_events') {
+                document.querySelectorAll('input[name="exclude_events[]"]').forEach(cb => cb.checked = false);
+            } else {
+                document.getElementById(map[key]).value = '';
+            }
             applyFilters();
         }
 
@@ -385,7 +418,10 @@
             if (filters.date_from) params.append('date_from', filters.date_from);
             if (filters.date_to) params.append('date_to', filters.date_to);
             if (filters.search) params.append('search', filters.search);
-
+            if (filters.exclude_events && filters.exclude_events.length > 0) {
+                filters.exclude_events.forEach(e => params.append('exclude_events[]', e));
+            }
+ 
             fetchAudits(params.toString());
         }
 
@@ -397,6 +433,9 @@
             if (filters.date_from) params.append('date_from', filters.date_from);
             if (filters.date_to) params.append('date_to', filters.date_to);
             if (filters.search) params.append('search', filters.search);
+            if (filters.exclude_events && filters.exclude_events.length > 0) {
+                filters.exclude_events.forEach(e => params.append('exclude_events[]', e));
+            }
             params.append('page', page);
 
             fetchAudits(params.toString());
@@ -526,6 +565,9 @@
             if (projDropdown && !projDropdown.contains(e.target) && !projTrigger.contains(e.target)) {
                 closeProjDropdown();
             }
+            if (exDropdown && !exDropdown.contains(e.target) && !exTrigger.contains(e.target)) {
+                closeExDropdown();
+            }
         });
 
         if (projSearchInput) {
@@ -585,13 +627,16 @@
         function getEventColor(event) {
             const colors = {
                 'created': 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                'updated': 'bg-blue-50 text-blue-600 border-blue-100',
+                'updated': 'bg-sky-50 text-sky-600 border-sky-100',
                 'deleted': 'bg-rose-50 text-rose-600 border-rose-100',
                 'restored': 'bg-purple-50 text-purple-600 border-purple-100',
-                'LOGGED_IN': 'bg-slate-50 text-slate-600 border-slate-200',
-                'LOGGED_OUT': 'bg-amber-50 text-amber-600 border-amber-100'
+                'LOGGED_IN': 'bg-indigo-50 text-indigo-600 border-indigo-100',
+                'LOGGED_OUT': 'bg-orange-50 text-orange-600 border-orange-100',
+                'viewed': 'bg-cyan-50 text-cyan-600 border-cyan-100',
+                'attached': 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
+                'detached': 'bg-pink-50 text-pink-600 border-pink-100',
             };
-            return colors[event] || 'bg-slate-50 text-slate-600 border-slate-100';
+            return colors[event] || 'bg-slate-50 text-slate-600 border-slate-200';
         }
 
         function formatJSONSafe(obj) {
@@ -601,6 +646,30 @@
             }
             if (Object.keys(obj).length === 0) return 'None';
             return JSON.stringify(obj, null, 2);
+        }
+
+        const exTrigger = document.getElementById('exclude-select-trigger');
+        const exDropdown = document.getElementById('exclude-dropdown');
+
+        if (exTrigger) {
+            exTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = exDropdown.classList.contains('hidden');
+                if (isHidden) {
+                    exDropdown.classList.remove('hidden');
+                    setTimeout(() => {
+                        exDropdown.classList.remove('scale-95', 'opacity-0');
+                    }, 10);
+                } else {
+                    closeExDropdown();
+                }
+            });
+        }
+
+        function closeExDropdown() {
+            if (!exDropdown) return;
+            exDropdown.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => exDropdown.classList.add('hidden'), 200);
         }
 
         document.addEventListener('DOMContentLoaded', () => {

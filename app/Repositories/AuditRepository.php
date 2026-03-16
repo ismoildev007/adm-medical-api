@@ -25,6 +25,10 @@ class AuditRepository
             $query->where('project_name', $filters['project']);
         }
 
+        if (!empty($filters['exclude_events']) && is_array($filters['exclude_events'])) {
+            $query->whereNotIn('event', $filters['exclude_events']);
+        }
+
         if (!empty($filters['event'])) {
             $query->where('event', $filters['event']);
         }

@@ -16,7 +16,7 @@
     "common.loading": "Loading...",
     "common.no_data": "No data found.",
     "common.confirm_delete": "Are you sure you want to delete?",
-    "common.logout": "Logout",
+    "common.logout": "logout",
     "common.details": "Details",
     "sidebar.main": "Main",
     "sidebar.management": "Management",

@@ -15,7 +15,7 @@ class AuditController extends Controller
     public function index(Request $request): JsonResponse
     {
         $audits = $this->auditService->getFiltered($request->only([
-            'project', 'event', 'date_from', 'date_to', 'search'
+            'project', 'event', 'date_from', 'date_to', 'search', 'exclude_events'
         ]));
 
         return response()->json($audits);

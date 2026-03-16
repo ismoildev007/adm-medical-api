@@ -54,7 +54,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        $this->auditService->logAuthEvent('logout', $user, [
+        $this->auditService->logAuthEvent('logged_out', $user, [
             'firstname' => $user->firstname,
             'lastname' => $user->lastname,
             'username' => $user->username,
