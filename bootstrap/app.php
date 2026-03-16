@@ -15,8 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\LocaleMiddleware::class,
+            \App\Http\Middleware\PageViewAudit::class
         ]);
-        
+        $middleware->api(append: [
+            \App\Http\Middleware\PageViewAudit::class
+        ]);
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);

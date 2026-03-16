@@ -13,9 +13,9 @@ class AuthService
         private readonly AuditService   $auditService,
     ) {}
 
-    public function login(string $email, string $password): array
+    public function login(string $username, string $password): array
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->userRepository->findByUserName($username);
 
         if (!$user || !Hash::check($password, $user->password)) {
             throw new \Illuminate\Validation\ValidationException(
@@ -26,7 +26,6 @@ class AuthService
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Log the login event manually
         $this->auditService->logAuthEvent('logged_in', $user, [
             'firstname' => $user->firstname,
             'username' => $user->username,
@@ -41,7 +40,6 @@ class AuthService
 
     public function logout(User $user): void
     {
-        // Log the logout event manually
         $this->auditService->logAuthEvent('logged_out', $user, [
             'firstname' => $user->firstname,
             'username' => $user->username,

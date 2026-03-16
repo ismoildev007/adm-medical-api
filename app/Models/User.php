@@ -17,6 +17,7 @@ class User extends Authenticatable implements Auditable
         'firstname',
         'lastname',
         'username',
+        'project_permission',
         'password',
         'created_by',
         'updated_by',
@@ -40,6 +41,7 @@ class User extends Authenticatable implements Auditable
         'firstname',
         'lastname',
         'username',
+        'project_permission',
         'password',
         'created_by',
         'updated_by',
@@ -67,12 +69,14 @@ class User extends Authenticatable implements Auditable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'project_permission' => 'array',
         ];
     }
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'role_user', 'user_name', 'role_name', 'username', 'name');
+        return $this->belongsToMany(Role::class, 'role_user', 'user_name', 'role_name', 'username', 'name')
+            ->using(RoleUser::class);
     }
 
     public function hasRole($role)

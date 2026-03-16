@@ -33,8 +33,8 @@ class UserRepository
         $user->delete();
     }
 
-    public function findByEmail(string $email): ?User
+    public function findByUserName(string $username): ?User
     {
-        return User::where('email', $email)->first();
+        return User::where('username', $username)->first();
     }
 }

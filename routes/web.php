@@ -10,6 +10,18 @@ Route::get('/', function () {
     return redirect('/uz');
 });
 
+// Fallback login for Authenticate middleware without locale
+Route::get('/login', function() {
+    return redirect()->route('login', ['locale' => app()->getLocale() ?: 'uz']);
+})->name('login-fallback');
+
+// ─── API endpoints for Blade (Session based) ────────────────
+Route::middleware('auth')->prefix('api')->group(function () {
+    Route::get('/audits', [\App\Http\Controllers\AuditController::class, 'index']);
+    Route::get('/audits/projects', [\App\Http\Controllers\AuditController::class, 'projects']);
+    Route::get('/audits/{auditId}/model', [\App\Http\Controllers\AuditController::class, 'modelData']);
+});
+
 // ─── Multi-language Group ────────────────────────────────
 Route::prefix('{locale}')->where(['locale' => 'uz|ru|en'])->group(function () {
 

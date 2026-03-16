@@ -225,7 +225,9 @@
             setModalMode('loading');
             showModal();
 
-            fetch(`/api/audits/${auditId}/model`)
+            fetch(`/api/audits/${auditId}/model`, {
+                headers: { 'Accept': 'application/json' }
+            })
                 .then(res => res.json())
                 .then(result => {
                     const isLive = result.source === 'live';
@@ -412,7 +414,9 @@
                 </svg>Loading...</td></tr>`;
 
             const url = '/api/audits' + (queryString ? '?' + queryString : '');
-            fetch(url)
+            fetch(url, {
+                headers: { 'Accept': 'application/json' }
+            })
                 .then(res => res.json())
                 .then(paginated => {
                     const data = paginated.data || [];
@@ -554,7 +558,9 @@
         }
 
         function loadProjects() {
-            fetch('/api/audits/projects')
+            fetch('/api/audits/projects', {
+                headers: { 'Accept': 'application/json' }
+            })
                 .then(res => res.json())
                 .then(projects => {
                     const list = document.getElementById('project-options-list');

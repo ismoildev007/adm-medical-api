@@ -57,32 +57,56 @@
 
         let html = '';
 
+        // first
         html += `
     <button onclick="${onPageChange}(1)"
     class="pagination-btn ${data.current_page === 1 ? 'disabled' : ''}">
         «
     </button>`;
 
+        // prev
         html += `
     <button onclick="${onPageChange}(${data.current_page-1})"
     class="pagination-btn ${data.current_page === 1 ? 'disabled' : ''}">
         ‹
     </button>`;
 
+        let start = Math.max(1, data.current_page - 2);
+        let end = Math.min(data.last_page, data.current_page + 2);
 
-        html += `
-    <button class="pagination-btn active">
-        ${data.current_page}
-    </button>`;
+        if (start > 1) {
+            html += `<button onclick="${onPageChange}(1)" class="pagination-btn">1</button>`;
 
+            if (start > 2) {
+                html += `<span class="pagination-btn disabled">...</span>`;
+            }
+        }
 
+        for (let i = start; i <= end; i++) {
+            html += `
+        <button onclick="${onPageChange}(${i})"
+        class="pagination-btn ${data.current_page === i ? 'active' : ''}">
+            ${i}
+        </button>`;
+        }
+
+        if (end < data.last_page) {
+
+            if (end < data.last_page - 1) {
+                html += `<span class="pagination-btn disabled">...</span>`;
+            }
+
+            html += `<button onclick="${onPageChange}(${data.last_page})" class="pagination-btn">${data.last_page}</button>`;
+        }
+
+        // next
         html += `
     <button onclick="${onPageChange}(${data.current_page+1})"
     class="pagination-btn ${data.current_page === data.last_page ? 'disabled' : ''}">
         ›
     </button>`;
 
-
+        // last
         html += `
     <button onclick="${onPageChange}(${data.last_page})"
     class="pagination-btn ${data.current_page === data.last_page ? 'disabled' : ''}">

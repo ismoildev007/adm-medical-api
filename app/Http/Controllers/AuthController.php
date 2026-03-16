@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\StoreUserRequest;
-use App\Services\AuditService;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +12,6 @@ class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthService $authService,
-        private readonly AuditService $auditService
     ) {}
 
     public function register(StoreUserRequest $request): JsonResponse

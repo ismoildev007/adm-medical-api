@@ -13,6 +13,13 @@ class AuditRepository
     public function getFiltered(array $filters): LengthAwarePaginator
     {
         $query = Audit::latest();
+        $user = auth()->user();
+
+        // Enforce project-based permissions
+        if ($user && !$user->hasRole('superadmin')) {
+            $allowedProjects = is_array($user->project_permission) ? $user->project_permission : [];
+            $query->whereIn('project_name', $allowedProjects);
+        }
 
         if (!empty($filters['project'])) {
             $query->where('project_name', $filters['project']);
@@ -47,10 +54,17 @@ class AuditRepository
 
     public function getDistinctProjects(): Collection
     {
-        return Audit::select('project_name')
+        $query = Audit::select('project_name')
             ->distinct()
-            ->whereNotNull('project_name')
-            ->orderBy('project_name')
+            ->whereNotNull('project_name');
+
+        $user = auth()->user();
+        if ($user && !$user->hasRole('superadmin')) {
+            $allowedProjects = is_array($user->project_permission) ? $user->project_permission : [];
+            $query->whereIn('project_name', $allowedProjects);
+        }
+
+        return $query->orderBy('project_name')
             ->pluck('project_name');
     }
 
@@ -88,7 +102,6 @@ class AuditRepository
         $modelId     = $audit->auditable_id;
         $modelName   = class_basename($modelClass);
 
-        // Try to load the live record if the class exists in this project
         if (class_exists($modelClass)) {
             try {
                 $record = $modelClass::find($modelId);
@@ -106,7 +119,6 @@ class AuditRepository
             }
         }
 
-        // Fallback: reconstruct from audit values (merge old → new for a full picture)
         $old = is_array($audit->old_values) ? $audit->old_values : [];
         $new = is_array($audit->new_values) ? $audit->new_values : [];
         $snapshot = array_merge(['id' => $modelId], $old, $new);

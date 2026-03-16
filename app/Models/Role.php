@@ -11,7 +11,7 @@ use OwenIt\Auditing\Contracts\Auditable;
  * @property string $description
  */
 
-class Role extends BaseModel implements Auditable
+class Role extends Model implements Auditable
 {
     use \OwenIt\Auditing\Auditable;
     public $timestamps = false;
@@ -31,11 +31,13 @@ class Role extends BaseModel implements Auditable
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'role_user', 'role_name', 'user_name', 'name', 'username');
+        return $this->belongsToMany(User::class, 'role_user', 'role_name', 'user_name', 'name', 'username')
+            ->using(RoleUser::class);
     }
 
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class, 'permission_role', 'role_name', 'permission_name', 'name', 'name');
+        return $this->belongsToMany(Permission::class, 'permission_role', 'role_name', 'permission_name', 'name', 'name')
+            ->using(PermissionRole::class);
     }
 }

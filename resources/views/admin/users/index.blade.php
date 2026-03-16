@@ -148,6 +148,7 @@
                         <th class="px-8 py-5 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">{{ __('users.table_user') }}</th>
                         <th class="px-8 py-5 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">{{ __('users.table_username') }}</th>
                         <th class="px-8 py-5 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">{{ __('users.table_roles') }}</th>
+                        <th class="px-8 py-5 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Loyihalar</th>
                         <th class="px-8 py-5 border-b border-slate-100"></th>
                     </tr>
                 </thead>
@@ -184,10 +185,19 @@
                             </div>
                         </td>
                         <td class="px-8 py-6 border-b border-slate-50">
+                            <div class="flex flex-wrap gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                @forelse($user->project_permission ?? [] as $proj)
+                                    <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">{{ $proj }}</span>
+                                @empty
+                                    <span class="italic text-slate-200">Hammasi (Superadmin bo'lsa)</span>
+                                @endforelse
+                            </div>
+                        </td>
+                        <td class="px-8 py-6 border-b border-slate-50">
                             <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
                                 <!-- Change role -->
                                 @can('admin-users-role')
-                                <button onclick="openRoleModal({{ $user->id }}, {{ $user->roles->pluck('name') }})"
+                                <button onclick="openRoleModal({{ $user->id }}, {{ $user->roles->pluck('name') }}, {{ json_encode($user->project_permission ?? []) }})"
                                     title="{{ __('users.edit_role') }}"
                                     class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95 shadow-sm">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -253,7 +263,6 @@
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">{{ __('users.password') }} *</label>
                     <input type="password" name="password" required class="w-full rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all">
                 </div>
-
                 {{-- Roles selection --}}
                 <div class="space-y-2">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">{{ __('users.table_roles') }} *</label>
@@ -262,6 +271,19 @@
                         <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-100 transition-all group">
                             <input type="checkbox" name="roles[]" value="{{ $role->name }}" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                             <span class="text-xs font-bold text-slate-600 group-hover:text-indigo-700 uppercase tracking-wider">{{ $role->name }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Project Permissions --}}
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Loyiha ruxsatlari</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
+                        @foreach($allProjects as $proj)
+                        <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-100 transition-all group">
+                            <input type="checkbox" name="projects[]" value="{{ $proj }}" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                            <span class="text-xs font-bold text-slate-600 group-hover:text-indigo-700 uppercase tracking-wider">{{ $proj }}</span>
                         </label>
                         @endforeach
                     </div>
@@ -296,6 +318,18 @@
                         <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-100 transition-all group">
                             <input type="checkbox" name="roles[]" value="{{ $role->name }}" data-role-name="{{ $role->name }}" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                             <span class="text-xs font-bold text-slate-600 group-hover:text-indigo-700 uppercase tracking-wider">{{ $role->name }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Loyiha ruxsatlari</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-1 custom-scrollbar">
+                        @foreach($allProjects as $proj)
+                        <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-100 transition-all group">
+                            <input type="checkbox" name="projects[]" value="{{ $proj }}" data-project-name="{{ $proj }}" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                            <span class="text-xs font-bold text-slate-600 group-hover:text-indigo-700 uppercase tracking-wider">{{ $proj }}</span>
                         </label>
                         @endforeach
                     </div>
@@ -424,13 +458,18 @@
         filterForm.submit();
     }
 
-    function openRoleModal(userId, currentRoles) {
+    function openRoleModal(userId, currentRoles, currentProjects) {
         const formMod = document.getElementById('role-change-form');
         formMod.action = `/${document.documentElement.lang}/admin/users/${userId}/role`;
 
-        const checkboxes = formMod.querySelectorAll('input[type="checkbox"]');
+        const checkboxes = formMod.querySelectorAll('input[name="roles[]"]');
         checkboxes.forEach(cb => {
             cb.checked = currentRoles.includes(cb.getAttribute('data-role-name'));
+        });
+
+        const projectCheckboxes = formMod.querySelectorAll('input[name="projects[]"]');
+        projectCheckboxes.forEach(cb => {
+            cb.checked = currentProjects.includes(cb.getAttribute('data-project-name'));
         });
 
         document.getElementById('role-modal').classList.remove('hidden');

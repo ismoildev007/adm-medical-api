@@ -61,6 +61,7 @@ return [
         'updated',
         'deleted',
         'restored',
+//        'retrieved'
     ],
 
     /*
@@ -117,7 +118,7 @@ return [
     | issues when storing large amounts of data. You can override this by
     | setting allow_array_values to true.
     */
-    'allowed_array_values' => false,
+    'allowed_array_values' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -194,5 +195,5 @@ return [
     |
     */
 
-    'console' => false,
+    'console' => true,
 ];
