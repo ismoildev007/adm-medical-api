@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop first so migrate:fresh works when global_audits DB already has the table
-        Schema::connection('global_audits')->dropIfExists('audits');
 
-        Schema::connection('global_audits')->create('audits', function (Blueprint $table) {
+        Schema::create('audits', function (Blueprint $table) {
             $morphPrefix = config('audit.user.morph_prefix', 'user');
 
             $table->bigIncrements('id');
@@ -42,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::connection('global_audits')->dropIfExists('audits');
+        Schema::dropIfExists('audits');
     }
 };
