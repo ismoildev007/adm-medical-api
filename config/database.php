@@ -63,27 +63,6 @@ return [
             ]) : [],
         ],
 
-        'audit_db' => [
-            'driver' => env('AUDIT_DB_CONNECTION', 'pgsql'),
-            'url' => env('DB_URL'),
-            'host' => env('AUDIT_DB_HOST', '127.0.0.1'),
-            'port' => env('AUDIT_DB_PORT', '5432'),
-            'database' => env('AUDIT_DB_DATABASE', 'global_audits'),
-            'username' => env('AUDIT_DB_USERNAME', 'postgres'),
-            'password' => env('AUDIT_DB_PASSWORD', ''),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'search_path' => 'public',
-            'sslmode' => 'prefer',
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
-        ],
 
         'mariadb' => [
             'driver' => 'mariadb',
