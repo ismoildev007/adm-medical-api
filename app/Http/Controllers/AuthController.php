@@ -10,9 +10,12 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    protected AuthService $authService;
     public function __construct(
-        private readonly AuthService $authService,
-    ) {}
+        AuthService $authService,
+    ) {
+        $this->authService = $authService;
+    }
 
     public function register(StoreUserRequest $request): JsonResponse
     {

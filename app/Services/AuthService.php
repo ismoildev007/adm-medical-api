@@ -8,10 +8,15 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
+    protected UserRepository $userRepository;
+    protected AuditService $auditService;
     public function __construct(
-        private readonly UserRepository $userRepository,
-        private readonly AuditService   $auditService,
-    ) {}
+        UserRepository $userRepository,
+        AuditService $auditService,
+    ) {
+        $this->userRepository = $userRepository;
+        $this->auditService = $auditService;
+    }
 
     public function login(string $username, string $password): array
     {
