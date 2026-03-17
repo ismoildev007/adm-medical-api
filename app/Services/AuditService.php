@@ -39,4 +39,12 @@ class AuditService
     {
         return $this->auditRepository->resolveModelData($auditId);
     }
+
+    /**
+     * Get aggregate statistics for charts.
+     */
+    public function getStats(): array
+    {
+        return $this->auditRepository->getStats();
+    }
 }

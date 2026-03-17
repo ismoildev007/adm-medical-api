@@ -32,4 +32,9 @@ class AuditController extends Controller
 
         return response()->json($data);
     }
+
+    public function stats(): JsonResponse
+    {
+        return response()->json($this->auditService->getStats());
+    }
 }

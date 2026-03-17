@@ -136,5 +136,55 @@ class AuditRepository
             'data'    => $snapshot,
         ];
     }
+
+    /**
+     * Get aggregate statistics for charts.
+     */
+    public function getStats(): array
+    {
+        $user = auth()->user();
+        $allowedProjects = ($user && !$user->hasRole('superadmin')) 
+            ? (is_array($user->project_permission) ? $user->project_permission : []) 
+            : null;
+
+        $baseQuery = Audit::query();
+        if ($allowedProjects !== null) {
+            $baseQuery->whereIn('project_name', $allowedProjects);
+        }
+
+        // Projects distribution
+        $projects = (clone $baseQuery)->selectRaw('project_name, count(*) as count')
+            ->groupBy('project_name')
+            ->orderByDesc('count')
+            ->get();
+
+        // Events distribution
+        $events = (clone $baseQuery)->selectRaw('event, count(*) as count')
+            ->groupBy('event')
+            ->orderByDesc('count')
+            ->get();
+
+        // Top URLs
+        $urls = (clone $baseQuery)->selectRaw('url, count(*) as count')
+            ->whereNotNull('url')
+            ->groupBy('url')
+            ->orderByDesc('count')
+            ->limit(10)
+            ->get();
+
+        // Activity Trend (Last 30 days)
+        $days = (clone $baseQuery)->selectRaw('DATE(created_at) as date, count(*) as count')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        return [
+            'projects' => $projects,
+            'events'   => $events,
+            'urls'     => $urls,
+            'timeline' => $days,
+        ];
+    }
 }
 

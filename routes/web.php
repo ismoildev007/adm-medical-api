@@ -19,6 +19,7 @@ Route::get('/login', function() {
 Route::middleware('auth')->prefix('api')->group(function () {
     Route::get('/audits', [\App\Http\Controllers\AuditController::class, 'index']);
     Route::get('/audits/projects', [\App\Http\Controllers\AuditController::class, 'projects']);
+    Route::get('/audits/stats', [\App\Http\Controllers\AuditController::class, 'stats']);
     Route::get('/audits/{auditId}/model', [\App\Http\Controllers\AuditController::class, 'modelData']);
 });
 
@@ -35,6 +36,10 @@ Route::prefix('{locale}')->where(['locale' => 'uz|ru|en'])->group(function () {
         Route::get('/dashboard', function () {
             return view('audits');
         })->name('web.dashboard');
+
+        Route::get('/charts', function () {
+            return view('charts');
+        })->name('web.charts');
         
         // Redirect /{locale} to /{locale}/dashboard
         Route::get('/', function ($locale) {
