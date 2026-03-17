@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if(config('app.env') === 'production') {
+            url()->forceScheme('https');
+        }
         Audit::creating(function ($audit) {
             $audit->project_name = config('app.name', 'Laravel');
         });
