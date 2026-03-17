@@ -33,6 +33,7 @@
             @endif
 
             <form method="POST" action="{{ route('login.post') }}" class="space-y-6">
+                @method('POST')
                 @csrf
                 <div class="space-y-2">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">{{ __('login.username') }}</label>
@@ -76,7 +77,7 @@
         </div>
 
         <p class="text-center mt-10 text-sm font-bold text-slate-400 uppercase tracking-widest">
-            © 2026 Audit Management by ADM GLOBAL
+            © 2026 Audit Management System by ADM GLOBAL
         </p>
     </div>
 
