@@ -179,73 +179,85 @@
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="document.getElementById('sync-modal').classList.add('hidden')"></div>
 
-        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-5xl p-8 transform transition-all border border-slate-200">
-            <div class="flex items-center justify-between mb-8">
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-5xl p-0 transform transition-all border border-slate-200 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-8 border-b border-slate-100">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-900 tracking-tight" id="sync-role-title">{{ __('roles.edit_title') }}</h2>
-                    <p class="text-sm font-medium text-slate-500 mt-1">{{ __('roles.sync_subtitle') }}</p>
+                    <h2 class="text-2xl font-bold text-slate-900 tracking-tight" id="sync-role-title">Role sync permission:</h2>
                 </div>
-                <button onclick="document.getElementById('sync-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors">
+                <button onclick="document.getElementById('sync-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors border border-slate-200">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <div class="grid grid-cols-[1fr,80px,1fr] gap-6 h-[500px]">
-                <!-- All Permissions -->
-                <div class="flex flex-col bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-inner">
-                    <div class="p-4 border-b border-slate-200 bg-white shadow-sm">
-                        <div class="relative">
-                            <input type="text" id="all-perms-search" onkeyup="filterPane('all-perms-list', this.value)" placeholder="{{ __('common.search') }}..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-500">
+            <div class="p-8">
+                <div class="grid grid-cols-[1fr,60px,1fr] gap-6">
+                    <!-- Left Pane: Available Permissions -->
+                    <div class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                        <!-- Search Header -->
+                        <div class="p-3 bg-slate-50 border-b border-slate-200">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </div>
+                                <input type="text" id="all-perms-search" onkeyup="filterPane('all-perms-list', this.value)" placeholder="{{ __('common.search') }}" class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
                         </div>
-                        <div class="mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest flex justify-between px-1">
-                            <span>{{ __('roles.available_permissions') }}</span>
-                            <span id="all-perms-count" class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-600">0</span>
+                        <!-- Section Title -->
+                        <div class="px-6 py-3 border-b border-slate-100 bg-white">
+                            <h3 class="text-sm font-bold text-slate-800">Permissions</h3>
+                        </div>
+                        <!-- Scrollable Body -->
+                        <div class="h-[400px] overflow-y-auto bg-white" id="all-perms-list">
+                            <!-- JS filled -->
                         </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-200" id="all-perms-list">
-                        <!-- JS filled -->
+
+                    <!-- Middle Controls -->
+                    <div class="flex flex-col items-center justify-center gap-4">
+                        <button onclick="moveAllVisible('all-perms-list', 'assigned-perms-list')" class="text-emerald-500 hover:text-emerald-700 transition-colors">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11 19l-1.41-1.41L15.17 12 9.59 6.41 11 5l7 7-7 7zM5 19l-1.41-1.41L9.17 12 3.59 6.41 5 5l7 7-7 7z"/>
+                            </svg>
+                        </button>
+                        <button onclick="moveAllVisible('assigned-perms-list', 'all-perms-list')" class="text-emerald-500 hover:text-emerald-700 transition-colors">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M13 19l1.41-1.41L8.83 12l5.58-5.59L13 5l-7 7 7 7zM19 19l1.41-1.41L14.83 12l5.58-5.59L19 5l-7 7 7 7z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Right Pane: Assigned Permissions -->
+                    <div class="flex flex-col border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                         <!-- Search Header -->
+                         <div class="p-3 bg-slate-50 border-b border-slate-200">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </div>
+                                <input type="text" id="assigned-perms-search" onkeyup="filterPane('assigned-perms-list', this.value)" placeholder="{{ __('common.search') }}" class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                        </div>
+                        <!-- Section Title -->
+                        <div class="px-6 py-3 border-b border-slate-100 bg-white">
+                            <h3 class="text-sm font-bold text-slate-800 text-center">Role permissions</h3>
+                        </div>
+                        <!-- Scrollable Body -->
+                        <div class="h-[400px] overflow-y-auto bg-white" id="assigned-perms-list">
+                            <!-- JS filled -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- Controls -->
-                <div class="flex flex-col items-center justify-center gap-6">
-                    <button onclick="moveSelected('all-perms-list', 'assigned-perms-list')" class="h-12 w-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-md hover:bg-indigo-600 hover:text-white transition-all text-slate-400 hover:border-indigo-600 active:scale-95 group">
-                        <svg class="h-6 w-6 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                <!-- Footer Actions -->
+                <div class="flex justify-end gap-3 mt-8">
+                    <button onclick="document.getElementById('sync-modal').classList.add('hidden')" class="px-8 py-3 rounded-xl bg-white border-none text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">
+                        {{ __('common.cancel') }}
                     </button>
-                    <button onclick="moveSelected('assigned-perms-list', 'all-perms-list')" class="h-12 w-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-md hover:bg-indigo-600 hover:text-white transition-all text-slate-400 hover:border-indigo-600 active:scale-95 group">
-                        <svg class="h-6 w-6 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    <button onclick="savePermissions()" class="px-10 py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20">
+                        {{ __('common.save') }}
                     </button>
-                    <div class="mt-4 flex flex-col items-center gap-1">
-                        <div class="h-1 w-1 rounded-full bg-slate-200"></div>
-                        <div class="h-1 w-1 rounded-full bg-slate-200"></div>
-                        <div class="h-1 w-1 rounded-full bg-slate-200"></div>
-                    </div>
                 </div>
-
-                <!-- Assigned Permissions -->
-                <div class="flex flex-col bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-inner">
-                    <div class="p-4 border-b border-slate-200 bg-white shadow-sm">
-                        <div class="relative">
-                            <input type="text" id="assigned-perms-search" onkeyup="filterPane('assigned-perms-list', this.value)" placeholder="{{ __('common.search') }}..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-500">
-                        </div>
-                        <div class="mt-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest flex justify-between px-1">
-                            <span>{{ __('roles.assigned_permissions') }}</span>
-                            <span id="assigned-perms-count" class="bg-indigo-100 px-1.5 py-0.5 rounded text-indigo-700">0</span>
-                        </div>
-                    </div>
-                    <div class="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-thin scrollbar-thumb-indigo-100" id="assigned-perms-list">
-                        <!-- JS filled -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex gap-4 mt-8 pt-8 border-t border-slate-100">
-                <button onclick="document.getElementById('sync-modal').classList.add('hidden')" class="flex-1 rounded-2xl bg-white border border-slate-200 py-4 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-[0.98]">
-                    {{ __('common.cancel') }}
-                </button>
-                <button onclick="savePermissions()" class="flex-1 rounded-2xl bg-indigo-600 py-4 text-sm font-bold text-white hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98]">
-                    {{ __('common.save_changes') }}
-                </button>
             </div>
         </div>
     </div>
@@ -304,11 +316,20 @@
 
 @push('scripts')
 <style>
-    .perm-item { @apply flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50 transition-all shadow-sm; }
-    .perm-item.selected { @apply border-indigo-500 bg-indigo-50 ring-2 ring-indigo-500 ring-offset-1; }
-    .scrollbar-thin::-webkit-scrollbar { width: 5px; }
-    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    .perm-item-new {
+        @apply flex items-center justify-between px-6 py-3 border-b border-slate-100 hover:bg-indigo-50/50 transition-colors;
+    }
+    .perm-item-new:last-child { border-bottom: none; }
+    .perm-name { @apply text-xs font-medium text-slate-500; }
+
+    /* Custom scrollbar for panes */
+    #all-perms-list::-webkit-scrollbar,
+    #assigned-perms-list::-webkit-scrollbar { width: 4px; }
+    #all-perms-list::-webkit-scrollbar-track,
+    #assigned-perms-list::-webkit-scrollbar-track { background: transparent; }
+    #all-perms-list::-webkit-scrollbar-thumb,
+    #assigned-perms-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
     .filter-btn.active {
         background: white;
         color: #4f46e5;
@@ -391,62 +412,71 @@
     let currentSyncRole = '';
 
     function filterPane(listId, val) {
-        const items = document.querySelectorAll(`#${listId} .perm-item`);
+        const items = document.querySelectorAll(`#${listId} .perm-item-new`);
         val = val.toLowerCase();
         items.forEach(item => {
-            const text = item.innerText.toLowerCase();
+            const text = item.querySelector('.perm-name').innerText.toLowerCase();
             item.style.display = text.includes(val) ? 'flex' : 'none';
         });
     }
 
-    function toggleSelect(el) {
-        el.classList.toggle('selected');
-    }
-
-    function moveSelected(fromId, toId) {
-        const selected = document.querySelectorAll(`#${fromId} .perm-item.selected`);
-        const target = document.getElementById(toId);
-        selected.forEach(el => {
-            el.classList.remove('selected');
-            target.appendChild(el);
+    function moveAllVisible(fromId, toId) {
+        const items = document.querySelectorAll(`#${fromId} .perm-item-new`);
+        items.forEach(el => {
+            if (el.style.display !== 'none') {
+                 // Simulate click on the action button
+                 el.querySelector('button').click();
+            }
         });
-        updateCounts();
-    }
-
-    function updateCounts() {
-        document.getElementById('all-perms-count').innerText = document.getElementById('all-perms-list').childElementCount;
-        document.getElementById('assigned-perms-count').innerText = document.getElementById('assigned-perms-list').childElementCount;
     }
 
     function createPermElement(p, isAssigned) {
         const div = document.createElement('div');
-        div.className = 'perm-item group';
+        div.className = 'perm-item-new group';
         div.dataset.value = p;
 
         const updateContent = (assigned) => {
-            div.innerHTML = assigned
-                ? `<span class="text-[12px] font-bold text-indigo-700 truncate">${p}</span><svg class="h-4 w-4 text-indigo-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`
-                : `<span class="text-[12px] font-bold text-slate-700 truncate">${p}</span><div class="h-4 w-4 rounded-full border border-slate-200 flex items-center justify-center bg-slate-50 group-hover:bg-indigo-100 transition-colors"><div class="h-1.5 w-1.5 rounded-full bg-slate-300 group-hover:bg-indigo-400"></div></div>`;
+            if (assigned) {
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 truncate">
+                        <button class="mt-5 text-rose-400 hover:text-rose-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </button>
+                        <span class="mt-5 perm-name">${p}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div class="flex items-center justify-between gap-3 w-full">
+                        <span class="mt-5 perm-name truncate">${p}</span>
+                        <button class="mt-5 text-emerald-400 hover:text-emerald-600 transition-colors">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }
+
+            div.querySelector('button').onclick = (e) => {
+                e.stopPropagation();
+                const currentPane = div.parentElement.id;
+                const targetPane = currentPane === 'all-perms-list' ? 'assigned-perms-list' : 'all-perms-list';
+                const isNowAssigned = targetPane === 'assigned-perms-list';
+
+                updateContent(isNowAssigned);
+                document.getElementById(targetPane).appendChild(div);
+            };
         };
 
         updateContent(isAssigned);
-
-        div.onclick = () => {
-            const currentPane = div.parentElement.id;
-            const targetPane = currentPane === 'all-perms-list' ? 'assigned-perms-list' : 'all-perms-list';
-            const isNowAssigned = targetPane === 'assigned-perms-list';
-
-            updateContent(isNowAssigned);
-            document.getElementById(targetPane).appendChild(div);
-            updateCounts();
-        };
-
         return div;
     }
 
     async function openSyncModal(roleName) {
         currentSyncRole = roleName;
-        document.getElementById('sync-role-title').innerText = `"${roleName}" huquqlari`;
+        document.getElementById('sync-role-title').innerText = `Role sync permission: ${roleName}`;
         const modal = document.getElementById('sync-modal');
         const allPane = document.getElementById('all-perms-list');
         const assignedPane = document.getElementById('assigned-perms-list');
@@ -471,14 +501,13 @@
                     allPane.appendChild(el);
                 }
             });
-            updateCounts();
         } catch (e) {
             allPane.innerHTML = '<div class="text-rose-500 p-4 text-xs font-bold text-center">{{ __("common.error") }}</div>';
         }
     }
 
     async function savePermissions() {
-        const perms = Array.from(document.querySelectorAll('#assigned-perms-list .perm-item')).map(el => el.dataset.value);
+        const perms = Array.from(document.querySelectorAll('#assigned-perms-list .perm-item-new')).map(el => el.dataset.value);
         try {
             const res = await fetch(`/${document.documentElement.lang}/admin/roles/${currentSyncRole}/sync`, {
                 method: 'POST',
