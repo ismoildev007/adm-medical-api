@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Route;
 
 // Root redirect
 Route::get('/', function () {
-    return redirect('/uz');
+    $locale = app()->getLocale() ?: 'uz';
+    return redirect()->route('web.dashboard', ['locale' => $locale]);
 });
 
 // Fallback login for Authenticate middleware without locale
@@ -40,16 +41,16 @@ Route::prefix('{locale}')->where(['locale' => 'uz|ru|en'])->group(function () {
         Route::get('/charts', function () {
             return view('charts');
         })->name('web.charts');
-        
+
         // Redirect /{locale} to /{locale}/dashboard
-        Route::get('/', function ($locale) {
-            return redirect()->route('web.dashboard', ['locale' => $locale]);
+        Route::get('/', function () {
+            return redirect()->route('web.dashboard', ['locale' => app()->getLocale()]);
         });
     });
 
     // ─── SuperAdmin Only (Management) ───
     Route::middleware(['auth', 'role'])->prefix('admin')->name('admin.')->group(function () {
-        
+
         // Users
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');

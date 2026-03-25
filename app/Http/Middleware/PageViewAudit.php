@@ -15,7 +15,7 @@ class PageViewAudit
 
         if (Auth::check() && $request->isMethod('get') && $response->getStatusCode() == 200) {
             Audit::create([
-                'user_type'   => get_class(Auth::user()),
+                'user_type' => Auth::user() ? get_class(Auth::user()) : null,
                 'user_id'     => Auth::id(),
                 'event'       => 'viewed',
                 'auditable_type' => 'Page',
