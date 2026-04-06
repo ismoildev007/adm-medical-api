@@ -99,12 +99,24 @@ class UserService
         return $user;
     }
 
-    public function updateRolesAndProjects(User $user, array $data): void
+    public function updateUserDetails(User $user, array $data): void
     {
         if (isset($data['roles'])) {
             $user->roles()->sync($data['roles']);
         }
-        $user->update(['project_permission' => $data['projects'] ?? []]);
+        
+        $updateData = [
+            'firstname' => $data['firstname'] ?? $user->firstname,
+            'lastname'  => $data['lastname'] ?? $user->lastname,
+            'username'  => $data['username'] ?? $user->username,
+            'project_permission' => $data['projects'] ?? [],
+        ];
+
+        if (!empty($data['password'])) {
+            $updateData['password'] = Hash::make($data['password']);
+        }
+
+        $user->update($updateData);
     }
 
     public function delete(User $user): void

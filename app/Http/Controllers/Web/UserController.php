@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -21,34 +23,20 @@ class UserController extends Controller
         return view('admin.users.index', array_merge(['users' => $users], $formData));
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $data = $request->validate([
-            'firstname' => 'required|string|max:100',
-            'lastname'  => 'required|string|max:100',
-            'username'  => 'required|string|max:100|unique:users,username',
-            'password'  => 'required|string|min:6',
-            'roles'     => 'required|array',
-            'roles.*'   => 'string|exists:roles,name',
-            'projects'  => 'nullable|array',
-            'projects.*'=> 'string',
-        ]);
+        $data = $request->validated();
 
         $this->userService->createUser($data);
 
         return back()->with('success', 'Foydalanuvchi yaratildi.');
     }
 
-    public function updateRole(Request $request, User $user)
+    public function updateRole(UpdateUserRequest $request, User $user)
     {
-        $data = $request->validate([
-            'roles'     => 'required|array',
-            'roles.*'   => 'string|exists:roles,name',
-            'projects'  => 'nullable|array',
-            'projects.*'=> 'string',
-        ]);
+        $data = $request->validated();
 
-        $this->userService->updateRolesAndProjects($user, $data);
+        $this->userService->updateUserDetails($user, $data);
 
         return back()->with('success', 'Ma\'lumotlar yangilandi.');
     }
