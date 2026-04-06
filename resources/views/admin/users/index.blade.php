@@ -204,15 +204,17 @@
                                 </button>
                                 @endcan
 
-                                 <!-- Delete -->
+                                <!-- Delete -->
                                 @can('admin-users-destroy')
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('{{ __('common.confirm_delete') }}')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" title="{{ __('common.delete') }}"
-                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-95 shadow-sm">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </form>
+                                    @if($user->username !== 'superadmin')
+                                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('{{ __('common.confirm_delete') }}')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" title="{{ __('common.delete') }}"
+                                            class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-95 shadow-sm">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                    @endif
                                 @endcan
                             </div>
                         </td>
@@ -480,9 +482,13 @@
         const formMod = document.getElementById('edit-user-form');
         formMod.action = `/${document.documentElement.lang}/admin/users/${userId}/role`;
 
-        formMod.querySelector('input[name="firstname"]').value = userFirstname;
-        formMod.querySelector('input[name="lastname"]').value = userLastname;
-        formMod.querySelector('input[name="username"]').value = userUsername;
+        const fnameInput = formMod.querySelector('input[name="firstname"]');
+        const lnameInput = formMod.querySelector('input[name="lastname"]');
+        const unameInput = formMod.querySelector('input[name="username"]');
+        
+        fnameInput.value = userFirstname;
+        lnameInput.value = userLastname;
+        unameInput.value = userUsername;
         formMod.querySelector('input[name="password"]').value = '';
 
         const checkboxes = formMod.querySelectorAll('input[name="roles[]"]');
@@ -493,6 +499,19 @@
         const projectCheckboxes = formMod.querySelectorAll('input[name="projects[]"]');
         projectCheckboxes.forEach(cb => {
             cb.checked = currentProjects.includes(cb.getAttribute('data-project-name'));
+        });
+        
+        // Superadmin protections
+        const isSuperadmin = userUsername === 'superadmin';
+        fnameInput.readOnly = isSuperadmin;
+        lnameInput.readOnly = isSuperadmin;
+        unameInput.readOnly = isSuperadmin;
+        
+        checkboxes.forEach(cb => {
+            cb.disabled = isSuperadmin;
+        });
+        projectCheckboxes.forEach(cb => {
+            cb.disabled = isSuperadmin;
         });
 
         document.getElementById('role-modal').classList.remove('hidden');

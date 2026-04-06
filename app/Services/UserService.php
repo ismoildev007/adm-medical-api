@@ -101,6 +101,13 @@ class UserService
 
     public function updateUserDetails(User $user, array $data): void
     {
+        if ($user->username === 'superadmin') {
+            if (!empty($data['password'])) {
+                $user->update(['password' => Hash::make($data['password'])]);
+            }
+            return;
+        }
+
         if (isset($data['roles'])) {
             $user->roles()->sync($data['roles']);
         }
@@ -121,6 +128,9 @@ class UserService
 
     public function delete(User $user): void
     {
+        if ($user->username === 'superadmin') {
+            abort(403, 'Superadmin o\'chirilishi mumkin emas.');
+        }
         $user->delete();
     }
 }
