@@ -92,7 +92,7 @@
                         <div id="exclude-dropdown" class="absolute left-0 right-0 mt-3 bg-white rounded-[1.5rem] shadow-2xl border border-slate-100 p-3 z-[60] hidden overflow-hidden scale-95 opacity-0 transition-all duration-200 origin-top">
                             <div class="space-y-1 max-h-60 overflow-y-auto custom-scrollbar p-1">
                                 @php
-                                    $commonEvents = ['viewed', 'LOGGED_IN', 'LOGGED_OUT', 'created', 'updated', 'deleted', 'attached', 'detached'];
+                                    $commonEvents = ['viewed', 'logged_in', 'logged_out', 'created', 'updated', 'deleted', 'attached', 'detached'];
                                 @endphp
                                 @foreach($commonEvents as $event)
                                 <label class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 cursor-pointer group transition-all">
@@ -630,8 +630,8 @@
                 'updated': 'bg-sky-50 text-sky-600 border-sky-100',
                 'deleted': 'bg-rose-50 text-rose-600 border-rose-100',
                 'restored': 'bg-purple-50 text-purple-600 border-purple-100',
-                'LOGGED_IN': 'bg-indigo-50 text-indigo-600 border-indigo-100',
-                'LOGGED_OUT': 'bg-orange-50 text-orange-600 border-orange-100',
+                'logged_in': 'bg-indigo-50 text-indigo-600 border-indigo-100',
+                'logged_out': 'bg-orange-50 text-orange-600 border-orange-100',
                 'viewed': 'bg-cyan-50 text-cyan-600 border-cyan-100',
                 'attached': 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
                 'detached': 'bg-pink-50 text-pink-600 border-pink-100',
