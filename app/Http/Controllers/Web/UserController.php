@@ -3,50 +3,22 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
 use App\Models\User;
-use App\Models\Permission;
+use App\Services\UserService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private readonly UserService $userService
+    ) {}
+
     public function index(Request $request)
     {
-        $query = User::with('roles');
+        $users = $this->userService->getFilteredUsers($request->all());
+        $formData = $this->userService->getUserFormData();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('firstname', 'like', "%$search%")
-                  ->orWhere('lastname', 'like', "%$search%")
-                  ->orWhere('username', 'like', "%$search%");
-            });
-        }
-
-        if ($request->filled('role')) {
-            $query->whereHas('roles', function($q) use ($request) {
-                $q->where('roles.name', $request->role);
-            });
-        }
-
-        if ($request->filled('permission')) {
-            $query->whereHas('roles.permissions', function($q) use ($request) {
-                $q->where('permissions.name', $request->permission);
-            });
-        }
-
-        $users = $query->get();
-        $roles = Role::orderBy('name')->get();
-        $permissions = Permission::orderBy('name')->get();
-
-        $allProjects = \OwenIt\Auditing\Models\Audit::select('project_name')
-            ->distinct()
-            ->whereNotNull('project_name')
-            ->orderBy('project_name')
-            ->pluck('project_name');
-
-        return view('admin.users.index', compact('users', 'roles', 'permissions', 'allProjects'));
+        return view('admin.users.index', array_merge(['users' => $users], $formData));
     }
 
     public function store(Request $request)
@@ -62,16 +34,7 @@ class UserController extends Controller
             'projects.*'=> 'string',
         ]);
 
-        $user = User::create([
-            'firstname' => $data['firstname'],
-            'lastname'  => $data['lastname'],
-            'username'  => $data['username'],
-            'password'  => Hash::make($data['password']),
-            'project_permission' => $data['projects'] ?? [],
-            'created_by' => auth()->id(),
-        ]);
-
-        $user->roles()->attach($data['roles']);
+        $this->userService->createUser($data);
 
         return back()->with('success', 'Foydalanuvchi yaratildi.');
     }
@@ -85,15 +48,14 @@ class UserController extends Controller
             'projects.*'=> 'string',
         ]);
 
-        $user->roles()->sync($data['roles']);
-        $user->update(['project_permission' => $data['projects'] ?? []]);
+        $this->userService->updateRolesAndProjects($user, $data);
 
         return back()->with('success', 'Ma\'lumotlar yangilandi.');
     }
 
     public function destroy(User $user)
     {
-        $user->delete();
+        $this->userService->delete($user);
         return back()->with('success', 'Foydalanuvchi o\'chirildi.');
     }
 }
