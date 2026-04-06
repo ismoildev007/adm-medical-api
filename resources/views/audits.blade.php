@@ -517,7 +517,7 @@
                                     <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">
                                         ${audit.user_id || '?'}
                                     </div>
-                                    <div class="text-[11px] font-bold text-slate-700">${new Date(audit.created_at).toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
+                                    <div class="text-[11px] font-bold text-slate-700">${new Date(audit.created_at).toLocaleString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
                                 </div>
                             </td>
                         `;
