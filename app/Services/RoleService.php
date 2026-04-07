@@ -44,17 +44,27 @@ class RoleService
 
     public function updateRole(Role $role, array $data): bool
     {
+        if ($role->name === 'superadmin') {
+            abort(403, 'Superadmin rolni tahrirlash mumkin emas.');
+        }
         $data['updated_by'] = auth()->id();
         return $role->update($data);
     }
 
     public function deleteRole(Role $role): bool|null
     {
+        if ($role->name === 'superadmin') {
+            abort(403, 'Superadmin rolni o\'chirish mumkin emas.');
+        }
         return $role->delete();
     }
 
     public function syncPermissions(Role $role, array $permissionNames): int
     {
+        if ($role->name === 'superadmin') {
+            abort(403, 'Superadmin ruxsatlarini o\'zgartirish mumkin emas.');
+        }
+
         foreach ($permissionNames as $name) {
             Permission::firstOrCreate(['name' => $name]);
         }

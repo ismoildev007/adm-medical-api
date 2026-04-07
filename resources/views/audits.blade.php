@@ -81,9 +81,9 @@
                         class="w-full rounded-2xl border-none bg-slate-50 px-4 py-3.5 text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all cursor-pointer">
                 </div>
 
-                <!-- Exclusion Filter -->
+                <!-- Inclusion Filter -->
                 <div class="flex flex-col gap-2 min-w-[200px] w-full lg:w-auto relative" id="exclude-filter-container">
-                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] ml-1">YASHIRISH</label>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] ml-1">HARAKATLAR</label>
                     <div class="relative">
                         <div id="exclude-select-trigger" class="w-full rounded-2xl bg-slate-50 border-none px-4 py-3.5 text-sm font-bold text-slate-700 cursor-pointer flex items-center justify-between hover:bg-slate-100 transition-all">
                             <span id="exclude-selected-text" class="truncate">Metodlar</span>
@@ -96,7 +96,7 @@
                                 @endphp
                                 @foreach($commonEvents as $event)
                                 <label class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 cursor-pointer group transition-all">
-                                    <input type="checkbox" name="exclude_events[]" value="{{ $event }}" onchange="applyFilters()" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                    <input type="checkbox" name="events[]" value="{{ $event }}" onchange="applyFilters()" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
                                     <span class="text-xs font-bold text-slate-600 group-hover:text-indigo-700 uppercase tracking-widest">{{ $event }}</span>
                                 </label>
                                 @endforeach
@@ -314,7 +314,7 @@
                 date_from: document.getElementById('filter-date-from').value,
                 date_to: document.getElementById('filter-date-to').value,
                 search: document.getElementById('filter-search').value,
-                exclude_events: Array.from(document.querySelectorAll('input[name="exclude_events[]"]:checked')).map(cb => cb.value)
+                events: Array.from(document.querySelectorAll('input[name="events[]"]:checked')).map(cb => cb.value)
             };
         }
 
@@ -331,7 +331,7 @@
             document.getElementById('filter-date-to').value = '';
             document.getElementById('filter-date-to').min = ''; // Reset min constraint
             document.getElementById('filter-search').value = '';
-            document.querySelectorAll('input[name="exclude_events[]"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="events[]"]').forEach(cb => cb.checked = false);
             applyFilters();
         }
 
@@ -365,8 +365,8 @@
             if (filters.project) tags.push({ label: `Loyiha: ${filters.project}`, key: 'project' });
             if (filters.date_from) tags.push({ label: `Dan: ${filters.date_from}`, key: 'date_from' });
             if (filters.date_to) tags.push({ label: `Gacha: ${filters.date_to}`, key: 'date_to' });
-            if (filters.exclude_events && filters.exclude_events.length > 0) {
-                tags.push({ label: `Yashirilgan: ${filters.exclude_events.join(', ')}`, key: 'exclude_events' });
+            if (filters.events && filters.events.length > 0) {
+                tags.push({ label: `Harakatlar: ${filters.events.join(', ')}`, key: 'events' });
             }
 
             if (tags.length === 0) {
@@ -400,8 +400,8 @@
                 document.getElementById('filter-date-to').min = '';
             }
 
-            if (key === 'exclude_events') {
-                document.querySelectorAll('input[name="exclude_events[]"]').forEach(cb => cb.checked = false);
+            if (key === 'events') {
+                document.querySelectorAll('input[name="events[]"]').forEach(cb => cb.checked = false);
             } else {
                 document.getElementById(map[key]).value = '';
             }
@@ -418,8 +418,8 @@
             if (filters.date_from) params.append('date_from', filters.date_from);
             if (filters.date_to) params.append('date_to', filters.date_to);
             if (filters.search) params.append('search', filters.search);
-            if (filters.exclude_events && filters.exclude_events.length > 0) {
-                filters.exclude_events.forEach(e => params.append('exclude_events[]', e));
+            if (filters.events && filters.events.length > 0) {
+                filters.events.forEach(e => params.append('events[]', e));
             }
  
             fetchAudits(params.toString());
@@ -433,8 +433,8 @@
             if (filters.date_from) params.append('date_from', filters.date_from);
             if (filters.date_to) params.append('date_to', filters.date_to);
             if (filters.search) params.append('search', filters.search);
-            if (filters.exclude_events && filters.exclude_events.length > 0) {
-                filters.exclude_events.forEach(e => params.append('exclude_events[]', e));
+            if (filters.events && filters.events.length > 0) {
+                filters.events.forEach(e => params.append('events[]', e));
             }
             params.append('page', page);
 

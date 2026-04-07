@@ -503,16 +503,27 @@
         
         // Superadmin protections
         const isSuperadmin = userUsername === 'superadmin';
+        
+        const toggleClass = (el, condition, classes) => condition ? el.classList.add(...classes) : el.classList.remove(...classes);
+        const readonlyClasses = ['bg-slate-200', 'cursor-not-allowed', 'opacity-60', 'text-slate-500'];
+
         fnameInput.readOnly = isSuperadmin;
         lnameInput.readOnly = isSuperadmin;
         unameInput.readOnly = isSuperadmin;
         
-        checkboxes.forEach(cb => {
-            cb.disabled = isSuperadmin;
-        });
-        projectCheckboxes.forEach(cb => {
-            cb.disabled = isSuperadmin;
-        });
+        toggleClass(fnameInput, isSuperadmin, readonlyClasses);
+        toggleClass(lnameInput, isSuperadmin, readonlyClasses);
+        toggleClass(unameInput, isSuperadmin, readonlyClasses);
+        
+        const toggleCheckboxState = (cb, isSuper) => {
+            cb.disabled = isSuper;
+            const label = cb.closest('label');
+            if (label) toggleClass(label, isSuper, ['cursor-not-allowed', 'opacity-60', 'bg-slate-100']);
+            toggleClass(cb, isSuper, ['cursor-not-allowed']);
+        };
+
+        checkboxes.forEach(cb => toggleCheckboxState(cb, isSuperadmin));
+        projectCheckboxes.forEach(cb => toggleCheckboxState(cb, isSuperadmin));
 
         document.getElementById('role-modal').classList.remove('hidden');
     }
