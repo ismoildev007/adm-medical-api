@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Audit::creating(function ($audit) {
-            $audit->project_name = config('app.name', 'Laravel');
+            $audit->project_name = config('app.name', 'psa-test');
         });
 
         // ─── Authorization Gates ─────────────────────────────
