@@ -195,24 +195,26 @@
                         </td>
                         <td class="px-8 py-6 border-b border-slate-50">
                             <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                                <!-- Change role -->
+                                <!-- Change role & user edit -->
                                 @can('admin-users-role')
-                                <button onclick="openRoleModal({{ $user->id }}, {{ $user->roles->pluck('name') }}, {{ json_encode($user->project_permission ?? []) }})"
-                                    title="{{ __('users.edit_role') }}"
+                                <button onclick="openEditModal({{ $user->id }}, '{{ addslashes($user->firstname) }}', '{{ addslashes($user->lastname) }}', '{{ addslashes($user->username) }}', {{ $user->roles->pluck('name') }}, {{ json_encode($user->project_permission ?? []) }})"
+                                    title="Tahrirlash"
                                     class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95 shadow-sm">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                                 </button>
                                 @endcan
 
-                                 <!-- Delete -->
+                                <!-- Delete -->
                                 @can('admin-users-destroy')
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('{{ __('common.confirm_delete') }}')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" title="{{ __('common.delete') }}"
-                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-95 shadow-sm">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                </form>
+                                    @if($user->username !== 'superadmin')
+                                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('{{ __('common.confirm_delete') }}')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" title="{{ __('common.delete') }}"
+                                            class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-95 shadow-sm">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                    @endif
                                 @endcan
                             </div>
                         </td>
@@ -303,14 +305,32 @@
     </div>
 </div>
 
-{{-- ─── Change Role Modal ─── --}}
+{{-- ─── Edit User Modal ─── --}}
 <div id="role-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRoleModal()"></div>
         <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 lg:p-8 transform transition-all border border-slate-200 m-4 sm:m-0">
-            <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-6">{{ __('users.change_role') }}</h2>
-            <form method="POST" id="role-change-form" class="space-y-6">
+            <h2 class="text-xl font-bold text-slate-900 tracking-tight mb-6">Foydalanuvchini Tahrirlash</h2>
+            <form method="POST" id="edit-user-form" class="space-y-6">
                 @csrf
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">{{ __('users.firstname') }} *</label>
+                        <input type="text" name="firstname" required class="w-full rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">{{ __('users.lastname') }} *</label>
+                        <input type="text" name="lastname" required class="w-full rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all">
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">{{ __('users.table_username') }} *</label>
+                    <input type="text" name="username" required class="w-full rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Yangi Parol (ixtiyoriy)</label>
+                    <input type="password" name="password" placeholder="O'zgartirish uchun yozing..." class="w-full rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all">
+                </div>
                 <div class="space-y-2">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">{{ __('users.table_roles') }}</label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-1 custom-scrollbar">
@@ -458,9 +478,18 @@
         filterForm.submit();
     }
 
-    function openRoleModal(userId, currentRoles, currentProjects) {
-        const formMod = document.getElementById('role-change-form');
+    function openEditModal(userId, userFirstname, userLastname, userUsername, currentRoles, currentProjects) {
+        const formMod = document.getElementById('edit-user-form');
         formMod.action = `/${document.documentElement.lang}/admin/users/${userId}/role`;
+
+        const fnameInput = formMod.querySelector('input[name="firstname"]');
+        const lnameInput = formMod.querySelector('input[name="lastname"]');
+        const unameInput = formMod.querySelector('input[name="username"]');
+        
+        fnameInput.value = userFirstname;
+        lnameInput.value = userLastname;
+        unameInput.value = userUsername;
+        formMod.querySelector('input[name="password"]').value = '';
 
         const checkboxes = formMod.querySelectorAll('input[name="roles[]"]');
         checkboxes.forEach(cb => {
@@ -471,6 +500,30 @@
         projectCheckboxes.forEach(cb => {
             cb.checked = currentProjects.includes(cb.getAttribute('data-project-name'));
         });
+        
+        // Superadmin protections
+        const isSuperadmin = userUsername === 'superadmin';
+        
+        const toggleClass = (el, condition, classes) => condition ? el.classList.add(...classes) : el.classList.remove(...classes);
+        const readonlyClasses = ['bg-slate-200', 'cursor-not-allowed', 'opacity-60', 'text-slate-500'];
+
+        fnameInput.readOnly = isSuperadmin;
+        lnameInput.readOnly = isSuperadmin;
+        unameInput.readOnly = isSuperadmin;
+        
+        toggleClass(fnameInput, isSuperadmin, readonlyClasses);
+        toggleClass(lnameInput, isSuperadmin, readonlyClasses);
+        toggleClass(unameInput, isSuperadmin, readonlyClasses);
+        
+        const toggleCheckboxState = (cb, isSuper) => {
+            cb.disabled = isSuper;
+            const label = cb.closest('label');
+            if (label) toggleClass(label, isSuper, ['cursor-not-allowed', 'opacity-60', 'bg-slate-100']);
+            toggleClass(cb, isSuper, ['cursor-not-allowed']);
+        };
+
+        checkboxes.forEach(cb => toggleCheckboxState(cb, isSuperadmin));
+        projectCheckboxes.forEach(cb => toggleCheckboxState(cb, isSuperadmin));
 
         document.getElementById('role-modal').classList.remove('hidden');
     }

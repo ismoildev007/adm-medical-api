@@ -3,35 +3,21 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Permission;
 use App\Models\Role;
+use App\Services\RoleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 
 class RoleController extends Controller
 {
+    public function __construct(
+        private readonly RoleService $roleService
+    ) {}
+
     public function index(Request $request)
     {
-        $query = Role::withCount('permissions');
-
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('description', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        if ($request->filled('permission')) {
-            $query->whereHas('permissions', fn($q) => $q->where('name', $request->permission));
-        }
-
-        if (!auth()->user()->hasRole('superadmin')) {
-            $query->where('name', '!=', 'superadmin');
-        }
-
-        $roles = $query->get();
-        $permissions = Permission::orderBy('name')->get();
+        $roles = $this->roleService->getFilteredRoles($request->all());
+        $permissions = $this->roleService->getAllPermissions();
 
         return view('admin.roles.index', compact('roles', 'permissions'));
     }
@@ -44,8 +30,7 @@ class RoleController extends Controller
             'description' => 'nullable|string|max:255',
         ]);
 
-        $data['created_by'] = auth()->id();
-        Role::create($data);
+        $this->roleService->createRole($data);
 
         return back()->with('success', 'Role yaratildi.');
     }
@@ -57,31 +42,20 @@ class RoleController extends Controller
             'type'        => 'required|integer',
         ]);
 
-        $data['updated_by'] = auth()->id();
-        $role->update($data);
+        $this->roleService->updateRole($role, $data);
 
         return back()->with('success', 'Role yangilandi.');
     }
 
     public function destroy(Role $role)
     {
-        $role->delete();
+        $this->roleService->deleteRole($role);
         return back()->with('success', 'Role o\'chirildi.');
     }
 
-    /**
-     * Get all route-based permissions for the permission sync modal.
-     */
     public function permissionsForRole(Role $role): JsonResponse
     {
-        $allPermissions = $this->getAllRoutePermissions();
-
-        $assigned = $role->permissions()->pluck('name')->toArray();
-
-        return response()->json([
-            'all'      => $allPermissions,
-            'assigned' => $assigned,
-        ]);
+        return response()->json($this->roleService->getPermissionsForRole($role));
     }
 
     public function syncPermissions(Request $request, Role $role): JsonResponse
@@ -91,39 +65,8 @@ class RoleController extends Controller
             'permissions.*' => 'string',
         ]);
 
-        $permissionNames = $data['permissions'] ?? [];
+        $count = $this->roleService->syncPermissions($role, $data['permissions'] ?? []);
 
-        foreach ($permissionNames as $name) {
-            Permission::firstOrCreate(['name' => $name]);
-        }
-
-        $role->permissions()->detach();
-        foreach ($permissionNames as $name) {
-            $role->permissions()->attach($name);
-        }
-
-        return response()->json(['success' => true, 'count' => count($permissionNames)]);
-    }
-
-    /**
-     * Derive permission name list from all named API routes.
-     */
-    private function getAllRoutePermissions(): array
-    {
-        $routes = Route::getRoutes()->getRoutesByName();
-        $names  = [];
-        foreach ($routes as $name => $route) {
-            if (str_starts_with($name, 'sanctum')
-                || str_starts_with($name, 'ignition')
-                || str_starts_with($name, 'debugbar')
-                || str_starts_with($name, 'web.')
-            ) {
-                continue;
-            }
-            $perm = str_replace(['.', '_', ' '], '-', $name);
-            $names[] = $perm;
-        }
-        sort($names);
-        return array_values(array_unique($names));
+        return response()->json(['success' => true, 'count' => $count]);
     }
 }

@@ -3,24 +3,21 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Permission;
+use App\Services\PermissionService;
 use Illuminate\Http\Request;
 
 class PermissionController extends Controller
 {
+    public function __construct(
+        private readonly PermissionService $permissionService
+    ) {}
+
     /**
      * Display a listing of permissions with optimal search.
      */
     public function index(Request $request)
     {
-        $query = Permission::query();
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        $permissions = $query->orderBy('name')->paginate(50)->withQueryString();
+        $permissions = $this->permissionService->getFilteredPermissions($request->all());
 
         if ($request->ajax()) {
             return response()->json($permissions);

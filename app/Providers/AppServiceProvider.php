@@ -23,12 +23,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
 
+//        if (!app()->environment('local')) {
         if(app()->environment(['production', 'test'])) {
             url()->forceScheme('https');
         }
 
         Audit::creating(function ($audit) {
-            $audit->project_name = config('app.name', 'Laravel');
+            $audit->project_name = config('app.name', 'psa-test');
         });
 
         // ─── Authorization Gates ─────────────────────────────

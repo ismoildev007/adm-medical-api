@@ -10,7 +10,7 @@
             <p class="text-[13px] font-medium text-slate-400 mt-2 tracking-wide">{{ __('roles.subtitle') }}</p>
         </div>
         @can('admin-roles-store')
-        <button onclick="document.getElementById('add-role-modal').classList.remove('hidden')"
+        <button onclick="openAddRoleModal()"
             class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-7 py-4 text-sm font-black text-white hover:bg-indigo-700 transition-all active:scale-95 shadow-xl shadow-indigo-600/20">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
             {{ __('roles.add_new') }}
@@ -131,35 +131,39 @@
                         </td>
                         <td class="px-8 py-6 border-b border-slate-50">
                             <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-3 group-hover:translate-x-0">
-                                <!-- Sync Permissions -->
-                                @can('admin-roles-sync')
-                                <button onclick="openSyncModal('{{ $role->name }}')"
-                                    title="{{ __('roles.sync_perms') }}"
-                                    class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95 shadow-sm">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-                                </button>
-                                @endcan
-
-                                <!-- Edit -->
-                                @can('admin-roles-update')
-                                <button onclick="editRole('{{ $role->name }}', '{{ $role->description }}', {{ $role->type }})"
-                                    title="{{ __('common.edit') }}"
-                                    class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-sky-600 border border-slate-200 hover:border-sky-100 hover:bg-sky-50 transition-all active:scale-95 shadow-sm">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                </button>
-                                @endcan
-
-                                <!-- Delete -->
-                                @if($role->type !== 0)
-                                @can('admin-roles-destroy')
-                                <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" onsubmit="return confirm('{{ __('common.confirm_delete') }}')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" title="{{ __('common.delete') }}"
-                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-95 shadow-sm">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                @if($role->name !== 'superadmin')
+                                    <!-- Sync Permissions -->
+                                    @can('admin-roles-sync')
+                                    <button onclick="openSyncModal('{{ $role->name }}')"
+                                        title="{{ __('roles.sync_perms') }}"
+                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-indigo-600 border border-slate-200 hover:border-indigo-100 hover:bg-indigo-50 transition-all active:scale-95 shadow-sm">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
                                     </button>
-                                </form>
-                                @endcan
+                                    @endcan
+    
+                                    <!-- Edit -->
+                                    @can('admin-roles-update')
+                                    <button onclick="editRole('{{ $role->name }}', '{{ $role->description }}', {{ $role->type }})"
+                                        title="{{ __('common.edit') }}"
+                                        class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-sky-600 border border-slate-200 hover:border-sky-100 hover:bg-sky-50 transition-all active:scale-95 shadow-sm">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </button>
+                                    @endcan
+    
+                                    <!-- Delete -->
+                                    @if($role->type !== 0)
+                                    @can('admin-roles-destroy')
+                                    <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" onsubmit="return confirm('{{ __('common.confirm_delete') }}')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" title="{{ __('common.delete') }}"
+                                            class="h-10 w-10 flex items-center justify-center rounded-xl bg-white text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-100 hover:bg-rose-50 transition-all active:scale-95 shadow-sm">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                    @endcan
+                                    @endif
+                                @else
+                                    <span class="text-[10px] font-bold text-slate-400 italic uppercase tracking-widest">{{ __('roles.protected', ['default' => 'HIMOYA QILINGAN']) }}</span>
                                 @endif
                             </div>
                         </td>
@@ -526,10 +530,29 @@
         document.getElementById('add-role-title').innerText = '{{ __("roles.edit_title") }}';
         document.getElementById('role-form').action = `/${document.documentElement.lang}/admin/roles/${name}`;
         document.getElementById('role-method').value = 'PUT';
-        document.getElementById('role-name-input').value = name;
-        document.getElementById('role-name-input').readOnly = true;
+        
+        const nameInput = document.getElementById('role-name-input');
+        nameInput.value = name;
+        nameInput.readOnly = true;
+        nameInput.classList.add('cursor-not-allowed', 'bg-slate-200', 'opacity-70', 'text-slate-500');
+        
         document.getElementById('role-desc-input').value = desc === 'null' ? '' : desc;
         document.getElementById('role-type-input').value = type;
+        document.getElementById('add-role-modal').classList.remove('hidden');
+    }
+
+    function openAddRoleModal() {
+        document.getElementById('add-role-title').innerText = '{{ __("roles.add_new") }}';
+        document.getElementById('role-form').action = `{{ route('admin.roles.store') }}`;
+        document.getElementById('role-method').value = 'POST';
+        
+        const nameInput = document.getElementById('role-name-input');
+        nameInput.value = '';
+        nameInput.readOnly = false;
+        nameInput.classList.remove('cursor-not-allowed', 'bg-slate-200', 'opacity-70', 'text-slate-500');
+        
+        document.getElementById('role-desc-input').value = '';
+        document.getElementById('role-type-input').value = '1';
         document.getElementById('add-role-modal').classList.remove('hidden');
     }
 
