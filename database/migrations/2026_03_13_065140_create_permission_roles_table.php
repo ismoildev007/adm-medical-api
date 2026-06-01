@@ -10,6 +10,7 @@ return new class extends Migration
     {
         // permission_role pivot: role_name → roles.name, permission_name → permissions.name
         Schema::create('permission_role', function (Blueprint $table) {
+            $table->id();
             $table->string('role_name');
             $table->string('permission_name');
 

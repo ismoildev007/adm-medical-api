@@ -9,6 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('roles', function (Blueprint $table) {
+            $table->id();
             $table->string('name')->primary();
             $table->integer('type')->default(1);      // 0 = System, 1 = User-defined
             $table->string('description')->nullable();
