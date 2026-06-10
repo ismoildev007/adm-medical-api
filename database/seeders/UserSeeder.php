@@ -2,48 +2,49 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    // Database\Seeders\UserSeeder.php ichida
     public function run(): void
     {
-        // Rollarni yaratish
-        $superadminRole = Role::firstOrCreate(['name' => 'superadmin'], [
-            'type' => 0,
-            'description' => 'Tizim super administratori',
-        ]);
+        $superadmin = User::firstOrCreate(
+            ['username' => 'superadmin'],
+            [
+                'firstname'          => 'Super',
+                'lastname'           => 'Admin',
+                'password'           => 'superadmin007',
+            ]
+        );
+        $superadmin->roles()->syncWithoutDetaching(['superadmin']);
 
-        $guardRole = Role::firstOrCreate(['name' => 'guard'], [
-            'type' => 1,
-            'description' => 'Oddiy foydalanuvchi',
-        ]);
+        $admin = User::firstOrCreate(
+            ['username' => 'admin'],
+            [
+                'firstname'          => 'Admin',
+                'lastname'           => 'Adminov',
+                'password'           => 'admin007',
+            ]
+        );
+        $admin->roles()->syncWithoutDetaching(['admin']);
 
-        // Superadmin foydalanuvchisini yaratish
-        $superadmin = User::firstOrCreate(['username' => 'superadmin'], [
-            'firstname' => 'Superadmin',
-            'lastname'  => 'Adminov',
-            'password'  => bcrypt('superadmin007'),
-        ]);
+        $doctor = User::firstOrCreate(
+            ['username' => 'doctor'],
+            [
+                'firstname'          => 'Doctor',
+                'lastname'           => 'Doctorov',
+                'password'           => 'doctor007',
+            ]
+        );
+        $doctor->roles()->syncWithoutDetaching(['doctor']);
 
-        // Guard foydalanuvchisini yaratish
-        $guard = User::firstOrCreate(['username' => 'guard'], [
-            'firstname' => 'Qorovul',
-            'lastname'  => "Qo'riqchiboyev",
-            'password'  => bcrypt('guard007'),
-        ]);
-
-        // DIQQAT: Pivot tablega bog'lash (user_name va role_name ustunlari uchun)
-        // Agar oldin bog'langan bo'lsa dublikat bo'lmasligi uchun sync() ishlatgan ma'qul
-        $superadmin->roles()->sync(['superadmin']);
-        $guard->roles()->sync(['guard']);
-
-        $this->command->info('✅ Rollar foydalanuvchilarga muvaffaqiyatli biriktirildi.');
+        $this->command->info('✅ Foydalanuvchilar yaratildi:');
+        $this->command->line('   superadmin / superadmin007  [role: superadmin]');
+        $this->command->line('   admin      / admin007       [role: admin]');
+        $this->command->line('   doctor      / doctor007       [role: doctor]');
     }
 }

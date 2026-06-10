@@ -1,0 +1,451 @@
+{
+  "info": {
+    "name": "Medical API — Warehouse",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Dori omborini boshqarish: dorilar va kirim/chiqim tranzaksiyalari.\nBase URL: {{base_url}}\n\nLogin qilgandan so'ng token avtomatik saqlanadi."
+  },
+  "variable": [
+    { "key": "base_url",      "value": "http://localhost:8000", "type": "string" },
+    { "key": "token",         "value": "",                      "type": "string" },
+    { "key": "medicine_id",   "value": "1",                     "type": "string" },
+    { "key": "transaction_id","value": "1",                     "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access_token) {",
+                  "    pm.collectionVariables.set('token', res.access_token);",
+                  "    console.log('Token saqlandi');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept",       "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"superadmin\",\n  \"password\": \"superadmin007\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💊 Medicines",
+      "item": [
+        {
+          "name": "List Medicines",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines?rows=20&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines"],
+              "query": [
+                { "key": "rows",        "value": "20" },
+                { "key": "page",        "value": "1" },
+                { "key": "s",           "value": "", "description": "Nom qidirish",                        "disabled": true },
+                { "key": "sort_by",     "value": "", "description": "name | quantity | expire_date",       "disabled": true },
+                { "key": "sort_dir",    "value": "", "description": "asc | desc",                          "disabled": true },
+                { "key": "quantity",    "value": "", "description": "Miqdor oralig'i: min|max",            "disabled": true },
+                { "key": "expire_date", "value": "", "description": "Srok oralig'i: YYYY-MM-DD|YYYY-MM-DD","disabled": true },
+                { "key": "is_active",   "value": "", "description": "true | false",                       "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List — search by name",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines?s=amoksitsillin&sort_dir=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines"],
+              "query": [
+                { "key": "s",        "value": "amoksitsillin" },
+                { "key": "sort_dir", "value": "asc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List — sort by quantity desc",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines?sort_by=quantity&sort_dir=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines"],
+              "query": [
+                { "key": "sort_by",  "value": "quantity" },
+                { "key": "sort_dir", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List — quantity filter (10 dan 500 gacha)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines?quantity=10|500",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines"],
+              "query": [
+                { "key": "quantity", "value": "10|500" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List — expire_date filter (sort asc)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines?expire_date=2026-01-01|2026-12-31&sort_by=expire_date&sort_dir=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines"],
+              "query": [
+                { "key": "expire_date", "value": "2026-01-01|2026-12-31" },
+                { "key": "sort_by",     "value": "expire_date" },
+                { "key": "sort_dir",    "value": "asc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Medicine",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines/{{medicine_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines", "{{medicine_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Medicine",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('medicine_id', res.data.id);",
+                  "    console.log('medicine_id saqlandi:', res.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Amoksitsillin 500mg\",\n  \"unit\": \"dona\",\n  \"quantity\": 0,\n  \"expire_date\": \"2027-03-01\",\n  \"description\": \"Keng spektrli antibiotik\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines"]
+            },
+            "description": "Yangi dori. Dastlabki quantity=0, kirim tranzaksiya orqali oshiriladi."
+          }
+        },
+        {
+          "name": "Update Medicine",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Amoksitsillin 500mg (yangilangan)\",\n  \"unit\": \"dona\",\n  \"quantity\": 0,\n  \"expire_date\": \"2027-06-01\",\n  \"description\": \"Yangilangan tavsif\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines/{{medicine_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines", "{{medicine_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Medicine",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/medicines/{{medicine_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "medicines", "{{medicine_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions?rows=20&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions"],
+              "query": [
+                { "key": "rows",        "value": "20" },
+                { "key": "page",        "value": "1" },
+                { "key": "medicine_id", "value": "", "description": "Dori filter",               "disabled": true },
+                { "key": "type",        "value": "", "description": "income|outcome|write_off",  "disabled": true },
+                { "key": "sort_dir",    "value": "", "description": "asc | desc (default: desc)","disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List — by medicine",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions?medicine_id={{medicine_id}}&sort_dir=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions"],
+              "query": [
+                { "key": "medicine_id", "value": "{{medicine_id}}" },
+                { "key": "sort_dir",    "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List — income only",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions?type=income",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions"],
+              "query": [{ "key": "type", "value": "income" }]
+            }
+          }
+        },
+        {
+          "name": "Show Transaction",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions/{{transaction_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions", "{{transaction_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Income — omborga kirim",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('transaction_id', res.data.id);",
+                  "    console.log('transaction_id:', res.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medicine_id\": {{medicine_id}},\n  \"type\": \"income\",\n  \"quantity\": 100,\n  \"comment\": \"Yangi partiya keldi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions"]
+            },
+            "description": "Kirim — medicine.quantity += 100"
+          }
+        },
+        {
+          "name": "Outcome — bemorga berildi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('transaction_id', res.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medicine_id\": {{medicine_id}},\n  \"type\": \"outcome\",\n  \"quantity\": 5,\n  \"comment\": \"Toshmatovga berildi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions"]
+            },
+            "description": "Chiqim — medicine.quantity -= 5. Yetarli bo'lmasa 422."
+          }
+        },
+        {
+          "name": "Write-off — hisobdan chiqarish",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medicine_id\": {{medicine_id}},\n  \"type\": \"write_off\",\n  \"quantity\": 10,\n  \"comment\": \"Yaroqlilik muddati o'tdi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Outcome — 422 yetarli emas (test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medicine_id\": {{medicine_id}},\n  \"type\": \"outcome\",\n  \"quantity\": 999999\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions"]
+            },
+            "description": "422 qaytarishi kerak: Omborda yetarli dori yo'q."
+          }
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/warehouse/transactions/{{transaction_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouse", "transactions", "{{transaction_id}}"]
+            },
+            "description": "O'chirilganda quantity teskari qaytariladi."
+          }
+        }
+      ]
+    }
+  ]
+}

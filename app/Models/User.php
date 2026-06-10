@@ -11,13 +11,12 @@ use OwenIt\Auditing\Contracts\Auditable;
 class User extends Authenticatable implements Auditable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, \Laravel\Sanctum\HasApiTokens, \OwenIt\Auditing\Auditable;
+    use HasFactory, Notifiable, \Laravel\Passport\HasApiTokens, \OwenIt\Auditing\Auditable, \Illuminate\Database\Eloquent\SoftDeletes;
 
     protected $auditInclude = [
         'firstname',
         'lastname',
         'username',
-        'project_permission',
         'password',
         'created_by',
         'updated_by',

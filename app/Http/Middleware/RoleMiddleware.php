@@ -9,14 +9,12 @@ use Illuminate\Support\Facades\Route;
 
 class RoleMiddleware
 {
-
-    // App\Http\Middleware\RoleMiddleware.php
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
 
         if (!$user) {
-            return redirect()->route('login');
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
         if ($user->hasRole('superadmin')) {
@@ -31,6 +29,6 @@ class RoleMiddleware
             return $next($request);
         }
 
-        abort(403, 'Bu sahifaga kirish uchun ruxsatingiz yo\'q.');
+        return response()->json(['message' => 'Bu amalni bajarish uchun ruxsatingiz yo\'q.'], 403);
     }
 }

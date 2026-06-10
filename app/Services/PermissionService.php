@@ -11,10 +11,12 @@ class PermissionService
     {
         $query = Permission::query();
 
-        if (!empty($filters['search'])) {
-            $query->where('name', 'like', "%{$filters['search']}%");
+        $search = $filters['s'] ?? $filters['search'] ?? null;
+        if (!empty($search)) {
+            $query->where('name', 'like', "%{$search}%");
         }
 
-        return $query->orderBy('name')->paginate(50)->withQueryString();
+        $perPage = (int) ($filters['rows'] ?? 50);
+        return $query->orderBy('name')->paginate($perPage)->withQueryString();
     }
 }

@@ -114,6 +114,33 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'audit_db' => [
+            'driver' => env('AUDIT_DB_CONNECTION', 'pgsql'),
+            'host' => env('AUDIT_DB_HOST', '127.0.0.1'),
+            'port' => env('AUDIT_DB_PORT', '5432'),
+            'database' => env('AUDIT_DB_DATABASE', 'global_audits'),
+            'username' => env('AUDIT_DB_USERNAME', 'global_audits'),
+            'password' => env('AUDIT_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
+        'hrm' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST_HRM'),
+            'port' => env('DB_PORT_HRM'),
+            'database' => env('DB_DATABASE_HRM'),
+            'username' => env('DB_USERNAME_HRM'),
+            'password' => env('DB_PASSWORD_HRM'),
+            'charset' => env('DB_CHARSET_HRM'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+        ]
+
     ],
 
     /*
@@ -149,7 +176,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'medical-api')).'-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 

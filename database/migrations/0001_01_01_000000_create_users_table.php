@@ -13,8 +13,7 @@ return new class extends Migration
             $table->string('firstname');
             $table->string('lastname');
             $table->string('username')->unique();
-            $table->text('project_permission')->nullable()->after('username');
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->rememberToken();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();

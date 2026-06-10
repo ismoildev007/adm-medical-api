@@ -14,7 +14,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\LocaleMiddleware::class,
             \App\Http\Middleware\PageViewAudit::class
         ]);
         $middleware->api(append: [
@@ -24,14 +23,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);
-
-        $middleware->redirectTo(function ($request) {
-            $locale = $request->segment(1);
-            if (!in_array($locale, ['uz', 'ru', 'en'])) {
-                $locale = 'uz';
-            }
-            return route('login', ['locale' => $locale]);
-        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Illuminate\Validation\ValidationException $e, \Illuminate\Http\Request $request) {
@@ -50,6 +41,15 @@ return Application::configure(basePath: dirname(__DIR__))
                     'success' => false,
                     'message' => 'Unauthenticated or Invalid Token.',
                 ], 401);
+            }
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Server error.',
+                ], $e->getStatusCode());
             }
         });
     })->create();

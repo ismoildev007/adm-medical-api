@@ -42,7 +42,7 @@ return [
     |
     */
     'resolvers' => [
-        'ip_address' => OwenIt\Auditing\Resolvers\IpAddressResolver::class,
+        'ip_address' => App\Resolvers\IpAddressResolver::class,
         'user_agent' => OwenIt\Auditing\Resolvers\UserAgentResolver::class,
         'url' => OwenIt\Auditing\Resolvers\UrlResolver::class,
     ],
@@ -72,7 +72,7 @@ return [
     |
     */
 
-    'strict' => true,
+    'strict' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -165,7 +165,7 @@ return [
     'drivers' => [
         'database' => [
             'table' => 'audits',
-            'connection' => null,
+            'connection' => 'audit_db',
         ],
     ],
 
@@ -194,5 +194,5 @@ return [
     |
     */
 
-    'console' => false,
+    'console' => env('AUDIT_CONSOLE', true),
 ];

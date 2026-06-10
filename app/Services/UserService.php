@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Repositories\UserRepository;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Role;
-use App\Models\Permission;
+use Illuminate\Database\Eloquent\Collection; // still used by getAll()
+use Illuminate\Support\Arr;
+use LdapRecord\Connection;
 use OwenIt\Auditing\Models\Audit;
 
 class UserService
@@ -28,44 +29,55 @@ class UserService
 
     public function create(array $data): User
     {
-        $data['password'] = Hash::make($data['password']);
         return $this->userRepository->create($data);
     }
 
     public function update(User $user, array $data): User
     {
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
         return $this->userRepository->update($user, $data);
     }
 
-    public function getFilteredUsers(array $filters): Collection
+    public function getFilteredUsers(array $filters): array
     {
         $query = User::with('roles');
 
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function($q) use ($search) {
+        if (!empty($filters['s'])) {
+            $search = $filters['s'];
+            $query->where(function ($q) use ($search) {
                 $q->where('firstname', 'like', "%{$search}%")
                   ->orWhere('lastname', 'like', "%{$search}%")
                   ->orWhere('username', 'like', "%{$search}%");
             });
         }
 
-        if (!empty($filters['role'])) {
-            $query->whereHas('roles', function($q) use ($filters) {
-                $q->where('roles.name', $filters['role']);
+        if (!empty($filters['roles'])) {
+            $query->whereHas('roles', function ($q) use ($filters) {
+                $q->where('roles.name', $filters['roles']);
             });
         }
 
-        if (!empty($filters['permission'])) {
-            $query->whereHas('roles.permissions', function($q) use ($filters) {
-                $q->where('permissions.name', $filters['permission']);
+        if (!empty($filters['permissions'])) {
+            $query->whereHas('roles.permissions', function ($q) use ($filters) {
+                $q->where('permissions.name', $filters['permissions']);
             });
         }
 
-        return $query->get();
+        $perPage = (int) ($filters['rows'] ?? 20);
+        $page    = (int) ($filters['page'] ?? 1);
+
+        $paginated = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $page);
+
+        return [
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'from'         => $paginated->firstItem(),
+                'last_page'    => $paginated->lastPage(),
+                'per_page'     => $paginated->perPage(),
+                'to'           => $paginated->lastItem(),
+                'total'        => $paginated->total(),
+            ],
+        ];
     }
 
     public function getUserFormData(): array
@@ -83,13 +95,32 @@ class UserService
 
     public function createUser(array $data): User
     {
+        $existing = User::withTrashed()->where('username', $data['username'])->first();
+
+        if ($existing && $existing->trashed()) {
+            $existing->restore();
+            $existing->update([
+                'firstname'          => $data['firstname'],
+                'lastname'           => $data['lastname'],
+                'password'           => $data['password'] ?? $existing->password,
+                'project_permission' => $data['projects'] ?? [],
+                'created_by'         => auth()->id(),
+                'deleted_by'         => null,
+            ]);
+            $existing->roles()->detach();
+            if (!empty($data['roles'])) {
+                $existing->roles()->attach($data['roles']);
+            }
+            return $existing->fresh();
+        }
+
         $user = User::create([
-            'firstname' => $data['firstname'],
-            'lastname'  => $data['lastname'],
-            'username'  => $data['username'],
-            'password'  => Hash::make($data['password']),
+            'firstname'          => $data['firstname'],
+            'lastname'           => $data['lastname'],
+            'username'           => $data['username'],
+            'password'           => $data['password'] ?? null,
             'project_permission' => $data['projects'] ?? [],
-            'created_by' => auth()->id(),
+            'created_by'         => auth()->id(),
         ]);
 
         if (!empty($data['roles'])) {
@@ -103,7 +134,7 @@ class UserService
     {
         if ($user->username === 'superadmin') {
             if (!empty($data['password'])) {
-                $user->update(['password' => Hash::make($data['password'])]);
+                $user->update(['password' => $data['password']]);
             }
             return;
         }
@@ -120,7 +151,7 @@ class UserService
         ];
 
         if (!empty($data['password'])) {
-            $updateData['password'] = Hash::make($data['password']);
+            $updateData['password'] = $data['password'];
         }
 
         $user->update($updateData);
@@ -131,6 +162,31 @@ class UserService
         if ($user->username === 'superadmin') {
             abort(403, 'Superadmin o\'chirilishi mumkin emas.');
         }
+        $user->update(['deleted_by' => auth()->id()]);
         $user->delete();
+    }
+
+    // LDAP dan foydalanuvchi ma'lumotlarini qidiradi (admin panel uchun)
+    // Yangi local user yaratishdan oldin HRM dagi ma'lumotlarni olish uchun ishlatiladi
+    public function findFromLdap(string $username): array|null
+    {
+        $connection = app(Connection::class);
+
+        $ldapUser = $connection
+            ->query()
+            ->search()
+            ->findBy('sAMAccountName', strtolower($username));
+
+        if (!$ldapUser) {
+            return null;
+        }
+
+        return [
+            'username'  => Arr::get($ldapUser, 'samaccountname.0'),
+            'firstname' => Arr::get($ldapUser, 'givenname.0'),
+            'lastname'  => Arr::get($ldapUser, 'sn.0'),
+            'cn'        => Arr::get($ldapUser, 'cn.0'),
+            'name'      => Arr::get($ldapUser, 'name.0'),
+        ];
     }
 }

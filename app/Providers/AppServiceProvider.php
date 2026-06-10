@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Permission;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use LdapRecord\Connection;
 use OwenIt\Auditing\Models\Audit;
 
 class AppServiceProvider extends ServiceProvider
@@ -14,7 +16,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(Connection::class, function () {
+            return new Connection([
+                'hosts'    => explode(',', config('ldap.ldap_hosts', '')),
+                'base_dn'  => config('ldap.ldap_base_dn'),
+                'username' => config('ldap.ldap_username'),
+                'password' => config('ldap.ldap_password'),
+                'port'     => (int) config('ldap.ldap_port', 3268),
+            ]);
+        });
     }
 
     /**
@@ -22,14 +32,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Audit::creating(function (Audit $audit) {
+            $audit->project_name = config('app.name');
 
-//        if (!app()->environment('local')) {
-        if(app()->environment(['production', 'test'])) {
-            url()->forceScheme('https');
-        }
-
-        Audit::creating(function ($audit) {
-            $audit->project_name = config('app.name', 'psa-test');
+            $connection = config('audit.drivers.database.connection');
+            if ($connection) {
+                $audit->setConnection($connection);
+            }
         });
 
         // ─── Authorization Gates ─────────────────────────────
@@ -46,11 +55,12 @@ class AppServiceProvider extends ServiceProvider
 
         if (!app()->runningInConsole() || app()->runningUnitTests()) {
             try {
-                Permission::all()->each(function ($permission) {
-                    Gate::define($permission->name, function ($user) use ($permission) {
-                        return $user->hasPermission($permission->name);
+                Cache::remember('all_permissions', 3600, fn() => Permission::all())
+                    ->each(function ($permission) {
+                        Gate::define($permission->name, function ($user) use ($permission) {
+                            return $user->hasPermission($permission->name);
+                        });
                     });
-                });
             } catch (\Throwable) {
                 // Skip if table doesn't exist yet
             }

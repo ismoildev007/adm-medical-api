@@ -2,5 +2,5 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-    OwenIt\Auditing\AuditingServiceProvider::class,
+    App\Providers\AuditServiceProvider::class,
 ];

@@ -11,12 +11,13 @@ class RoleService
 {
     public function getFilteredRoles(array $filters): Collection
     {
-        $query = Role::withCount('permissions');
+        $query = Role::with('permissions')->withCount('permissions');
 
-        if (!empty($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('description', 'like', '%' . $filters['search'] . '%');
+        $search = $filters['s'] ?? $filters['search'] ?? null;
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
             });
         }
 

@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserTypeEnum;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UserUpsertRequest;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
@@ -14,38 +17,58 @@ class UserController extends Controller
         private readonly UserService $userService
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json($this->userService->getAll());
+        $users = $this->userService->getFilteredUsers($request->all());
+        return response()->json($users);
     }
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = $this->userService->create($request->validated());
-
-        return response()->json($user, 201);
+        $user = $this->userService->createUser($request->validated());
+        return response()->json(['success' => true, 'data' => $user->load('roles')], 201);
     }
 
-    public function show(User $user): JsonResponse
+    public function update(int $id, UserUpsertRequest $request): JsonResponse
     {
-        return response()->json($this->userService->getOne($user));
+        $user = User::findOrFail($id);
+
+        if ($user->type == UserTypeEnum::SYSTEM) {
+            return response()->json(['message' => "You can't update system user"], 401);
+        }
+
+        $data = $request->validated();
+        unset($data['username']);
+
+        $this->userService->update($user, $data);
+
+        return response()->json(['success' => true, 'data' => $user->fresh()->load('roles')]);
     }
 
-    public function update(Request $request, User $user): JsonResponse
+    public function updateRole(Request $request, int $id): JsonResponse
     {
-        $validated = $request->validate([
-            'name'     => 'sometimes|string|max:255',
-            'email'    => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'sometimes|string|min:8',
+        $user = User::findOrFail($id);
+
+        $data = $request->validate([
+            'roles'   => 'nullable|array',
+            'roles.*' => 'string|exists:roles,name',
         ]);
 
-        return response()->json($this->userService->update($user, $validated));
+        $this->userService->updateUserDetails($user, $data);
+
+        return response()->json(['success' => true, 'data' => $user->fresh()->load('roles')]);
     }
 
-    public function destroy(User $user): JsonResponse
+    public function findFromLdap(Request $request): JsonResponse
     {
-        $this->userService->delete($user);
+        $result = $this->userService->findFromLdap(strtolower($request->input('username', '')));
+        return response()->json($result);
+    }
 
-        return response()->json(null, 204);
+    public function destroy(int $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+        $this->userService->delete($user);
+        return response()->json(['success' => true]);
     }
 }

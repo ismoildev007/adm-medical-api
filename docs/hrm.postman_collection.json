@@ -1,0 +1,470 @@
+{
+  "info": {
+    "name": "Medical API — HRM",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "HRM tizimidan sync bo'lgan ma'lumotlar uchun read-only API.\nBase URL: {{base_url}}\n\nLogin qilgandan so'ng token avtomatik saqlanadi."
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
+    { "key": "token",    "value": "",                      "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access_token) {",
+                  "    pm.collectionVariables.set('token', res.access_token);",
+                  "    console.log('Token saqlandi');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept",       "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"superadmin\",\n  \"password\": \"superadmin007\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Departments",
+      "item": [
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/departments?rows=20&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "departments"],
+              "query": [
+                { "key": "rows",   "value": "20",  "description": "Sahifadagi yozuvlar soni" },
+                { "key": "page",   "value": "1",   "description": "Sahifa raqami" },
+                { "key": "s",      "value": "",    "description": "Nom bo'yicha qidirish", "disabled": true },
+                { "key": "parent_id",          "value": "", "description": "Parent bo'lim ID", "disabled": true },
+                { "key": "department_type_id", "value": "", "description": "Bo'lim turi",      "disabled": true }
+              ]
+            },
+            "description": "Barcha bo'limlarni qaytaradi. Har bir bo'lim `translations` (en, ru, uz, uc) va `staff_count` bilan birga keladi."
+          }
+        },
+        {
+          "name": "List Departments — search",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/departments?s=texnologiya&rows=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "departments"],
+              "query": [
+                { "key": "s",    "value": "texnologiya" },
+                { "key": "rows", "value": "10" }
+              ]
+            },
+            "description": "Bo'lim nomi (tarjimasida) bo'yicha qidirish."
+          }
+        },
+        {
+          "name": "List Departments — by parent",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/departments?parent_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "departments"],
+              "query": [
+                { "key": "parent_id", "value": "1", "description": "Parent bo'lim ID si" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Department",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/departments/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "departments", "1"]
+            },
+            "description": "Bo'lim detail: translations + staff list (position bilan birga)."
+          }
+        },
+        {
+          "name": "Show Department — 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/departments/999999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "departments", "999999"]
+            },
+            "description": "Mavjud bo'lmagan ID — 404 qaytarishi kerak."
+          }
+        }
+      ]
+    },
+    {
+      "name": "💼 Positions",
+      "item": [
+        {
+          "name": "List Positions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/positions?rows=20&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "positions"],
+              "query": [
+                { "key": "rows", "value": "20" },
+                { "key": "page", "value": "1" },
+                { "key": "s",                "value": "", "description": "Nom bo'yicha qidirish", "disabled": true },
+                { "key": "position_type_id", "value": "", "description": "Lavozim turi",          "disabled": true }
+              ]
+            },
+            "description": "Barcha lavozimlar (translations bilan)."
+          }
+        },
+        {
+          "name": "List Positions — search",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/positions?s=muhandis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "positions"],
+              "query": [
+                { "key": "s", "value": "muhandis" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Position",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/positions/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "positions", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🪑 Staff",
+      "item": [
+        {
+          "name": "List Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/staff?rows=20&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "staff"],
+              "query": [
+                { "key": "rows", "value": "20" },
+                { "key": "page", "value": "1" },
+                { "key": "department_id",          "value": "", "description": "Bo'lim ID", "disabled": true },
+                { "key": "position_id",            "value": "", "description": "Lavozim ID", "disabled": true },
+                { "key": "is_department_director", "value": "", "description": "true / false", "disabled": true }
+              ]
+            },
+            "description": "Shtat birliklari ro'yxati (department + position translations bilan)."
+          }
+        },
+        {
+          "name": "List Staff — by department",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/staff?department_id=12",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "staff"],
+              "query": [
+                { "key": "department_id", "value": "12" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Staff — directors only",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/staff?is_department_director=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "staff"],
+              "query": [
+                { "key": "is_department_director", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/staff/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "staff", "1"]
+            },
+            "description": "Staff detail: department, position, employeeStaff.employee."
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Employees",
+      "item": [
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employees?rows=20&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employees"],
+              "query": [
+                { "key": "rows", "value": "20" },
+                { "key": "page", "value": "1" },
+                { "key": "s",             "value": "", "description": "Ism / familiya / tabel qidirish", "disabled": true },
+                { "key": "is_active",     "value": "", "description": "true / false",                   "disabled": true },
+                { "key": "department_id", "value": "", "description": "Bo'lim bo'yicha filter",         "disabled": true }
+              ]
+            },
+            "description": "Xodimlar ro'yxati. `full_name` — computed attribute (lastname + firstname + middle_name)."
+          }
+        },
+        {
+          "name": "List Employees — search",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employees?s=akbar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employees"],
+              "query": [
+                { "key": "s", "value": "akbar" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Employees — active only",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employees?is_active=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employees"],
+              "query": [
+                { "key": "is_active", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Employees — by department",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employees?department_id=12",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employees"],
+              "query": [
+                { "key": "department_id", "value": "12" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Employee",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employees/2048",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employees", "2048"]
+            },
+            "description": "Xodim detail: employeeStaff (department, position, staff) bilan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔗 Employee-Staff",
+      "item": [
+        {
+          "name": "List Employee-Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employee-staff?rows=20&page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employee-staff"],
+              "query": [
+                { "key": "rows", "value": "20" },
+                { "key": "page", "value": "1" },
+                { "key": "employee_id",  "value": "", "description": "Xodim ID",         "disabled": true },
+                { "key": "department_id","value": "", "description": "Bo'lim ID",         "disabled": true },
+                { "key": "staff_id",     "value": "", "description": "Shtat ID",          "disabled": true },
+                { "key": "main_staff",   "value": "", "description": "true / false",      "disabled": true }
+              ]
+            },
+            "description": "Xodim-shtat bog'liqliklari ro'yxati."
+          }
+        },
+        {
+          "name": "List Employee-Staff — by employee",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employee-staff?employee_id=2048",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employee-staff"],
+              "query": [
+                { "key": "employee_id", "value": "2048" }
+              ]
+            },
+            "description": "Bitta xodimning barcha shtat yozuvlari."
+          }
+        },
+        {
+          "name": "List Employee-Staff — main only",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employee-staff?main_staff=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employee-staff"],
+              "query": [
+                { "key": "main_staff", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Employee-Staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept",        "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/hrm/employee-staff/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "hrm", "employee-staff", "1"]
+            },
+            "description": "Employee-staff detail: employee, department, position, staff."
+          }
+        }
+      ]
+    }
+  ]
+}
